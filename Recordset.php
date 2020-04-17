@@ -96,30 +96,66 @@
 
 			if (!is_null($sql)) 
 			{
-				$haystack = ["S", "E", "L", "E", "C", "T"];
-				$haystackImploded = implode("", $haystack);
+				$haystack = 
+				[
+					"select" => "SELECT",
+					"update" => "UPDATE",
+					"insert" => "INSERT",
+					"delete" => "DELETE"
+
+				];
+
+				/*
+				* SQL commands
+				*/
+				$select = $haystack["select"];
+				$update = $haystack["update"];
+				$insert = $haystack["insert"];
+				$delete = $haystack["delete"];
 
 				$explodedSQL = explode(" ", $sql);
 				$sqlCommand = $explodedSQL[0];
+
+				//$completedQuery = $this->conn->prepare($sql);
 				
 				/*
 				* There has been a SELECT statement
 				* Retrieve data
 				* else do whatever the query has set
 				*/
-				if(strpos($haystackImploded, $sqlCommand) !== false)
+				if(strpos($sqlCommand, $select) > -1)
 				{
+					echo "working SELECT";
 
-					$completedQuery = $this->conn->prepare($sql);
+					/*$completedQuery->execute();
 
-					$result = $completedQuery->bind_result();
-					$num_of_rows = $result->num_rows;
+					$result = $completedQuery->get_result();
+
+					$num_of_rows = $result->num_rows;*/
+
+					/*
+					* number of rows bigger than 0
+					* loop through the rows and add it 
+					*/
+					/*if ($num_of_rows > 0)
+					{
+						# code...
+					}*/
 
 				}
+				else if (strpos($sqlCommand, $update) > -1 || strpos($sqlCommand, $insert) > -1 || strpos($sqlCommand, $delete) > -1)
+				{
 
+					//$completedQuery->execute();
 
+				}
+				else
+				{
+
+					exit("Query failed. No INSERT, SELECT, UPDATE, DELETE set in query. The given query selector is: {$sqlCommand}");
+
+				}
 			}
-
 		}
 
 		/*
@@ -135,4 +171,6 @@
 
 	}
 
+
+$recordTest = new Recordset("UPDATE", "table");
 ?>
