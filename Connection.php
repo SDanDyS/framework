@@ -1,27 +1,30 @@
 <?php
 	/*
 	* class Connection creates connections for the user
-	* the user can save 
+	* the user can save the connections this way and easily change the localhost to the master connection
 	*/
 	class Connection
 	{
+		/*
+		* $server stashes all the connections
+		*/
 		private static $server = [];
 
 		public function __construct($server, $dbServer, $dbUserName, $dbPwd, $dbName)
 		{
 
-			$databaseAcceptance = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
+			$databaseConnection = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
 
-			if ($databaseAcceptance->mysqli_errno) 
+			if ($databaseConnection->mysqli_errno) 
 			{
 
-				exit("Script exit. Database error: {$databaseAcceptance->connect_error}");
+				exit("Script exit. Database error: {$databaseConnection->connect_error}");
 
 			}
 			else 
 			{
 
-				self::$server[$server] = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
+				self::$server[$server] = $databaseConnection;
 
 			}
 

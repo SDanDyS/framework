@@ -13,6 +13,8 @@
 		* $row will keep the database table its column names
 		*/
 		private $row = [];
+		private $rowArray = [];
+		private $index = -1;
 
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
@@ -35,37 +37,6 @@
 		}
 
 		/*
-		* setField initiates the column you wish to set
-		*/
-		public function setField($key, $value)
-		{
-
-			$this->row[$key] = $value;
-
-		}
-
-		/*
-		* getField retrieves the requested column
-		*/
-		public function getField($key)
-		{
-
-			/*
-			* if key exists, return the requested key
-			* else return nothing (silence).
-			*/
-			if ($this->hasField($key)) 
-			{
-				return $this->row[$key];
-			}
-			else
-			{
-				return;
-			}
-
-		}
-
-		/*
 		* call save(), to insert, select, delete, update
 		*/
 		public function save()
@@ -77,16 +48,15 @@
 			*/
 			if (!empty($_POST)) 
 			{
-
 				foreach ($_POST as $key => $value) 
 				{
-
-					$this->row[$key] = $value;
-
+					if ($this->hasField($key)) 
+					{
+						$this->setField($key, $value);
+					}
 				}
 
 				$this->fireQuery();
-
 			}
 
 		}
@@ -116,7 +86,7 @@
 				$explodedSQL = explode(" ", $sql);
 				$sqlCommand = $explodedSQL[0];
 
-				//$completedQuery = $this->conn->prepare($sql);
+				$completedQuery = $this->conn->prepare($sql);
 				
 				/*
 				* There has been a SELECT statement
@@ -125,37 +95,84 @@
 				*/
 				if(strpos($sqlCommand, $select) > -1)
 				{
-					echo "working SELECT";
 
-					/*$completedQuery->execute();
+					$completedQuery->execute();
 
 					$result = $completedQuery->get_result();
 
-					$num_of_rows = $result->num_rows;*/
+					$num_of_rows = $result->num_rows;
 
 					/*
 					* number of rows bigger than 0
 					* loop through the rows and add it 
 					*/
-					/*if ($num_of_rows > 0)
+					if ($num_of_rows > 0)
 					{
-						# code...
-					}*/
+						while ($row = $result->fetch_assoc())
+						{
+							$columnKeys = NULL;
+							$columnKeys = array_keys($row);
+							$this->row = $columnKeys;
 
+							$this->setIndex();
+
+							foreach ($columnKeys as $key => $columnName) 
+							{
+								$this->rowArray[$this->index][$columnName] = $row[$columnName];
+							}
+
+							$this->next();
+						}
+					}
 				}
 				else if (strpos($sqlCommand, $update) > -1 || strpos($sqlCommand, $insert) > -1 || strpos($sqlCommand, $delete) > -1)
 				{
-
 					//$completedQuery->execute();
-
 				}
 				else
 				{
-
 					exit("Query failed. No INSERT, SELECT, UPDATE, DELETE set in query. The given query selector is: {$sqlCommand}");
-
 				}
 			}
+		}
+
+		/*
+		* setField initiates the column you wish to set
+		*/
+		public function setField($key, $value)
+		{
+
+			$this->setIndex();
+
+			if ($this->hasField($key)) 
+			{
+				$this->rowArray[$this->index][$key] = $value;
+			}
+
+		}
+
+		/*
+		* getField retrieves the requested column
+		*/
+		public function getField($key)
+		{
+
+			$this->setIndex();
+
+			/*
+			* if key exists, return the requested key
+			* else return nothing (silence).
+			* returning empty will prevent PHP from throwing an error.
+			*/
+			if ($this->hasField($key)) 
+			{
+				return $this->rowArray[$this->index][$key];
+			}
+			else
+			{
+				return;
+			}
+
 		}
 
 		/*
@@ -164,9 +181,22 @@
 		*/
 		private function hasField($key)
 		{
+			return in_array($key, $this->row);
+		}
 
-			return in_array($key, array_keys($this->row));
+		private function next()
+		{
+			$this->index = $this->index + 1;
 
+			return $this->index;
+		}
+
+		private function setIndex()
+		{
+			if ($this->index === -1) 
+			{
+				return $this->index + 1;
+			}
 		}
 
 	}
