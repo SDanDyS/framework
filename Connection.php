@@ -15,7 +15,7 @@
 
 			$databaseConnection = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
 
-			if ($databaseConnection->mysqli_errno) 
+			if ($databaseConnection->connect_error) 
 			{
 
 				exit("Script exit. Database error: {$databaseConnection->connect_error}");
@@ -30,7 +30,7 @@
 
 		}
 
-		public static function getServer($key)
+		private static function getServer($key)
 		{
 
 			if (array_key_exists($key, self::$server)) 
@@ -48,5 +48,13 @@
 
 		}
 
+		public static function setConnection($key)
+		{
+			return self::getServer($key);
+		}
+
 	}
+
+	//INST TEST CONNECTION
+	new Connection("local", "localhost", "root", "", "testdb");
 ?>

@@ -1,5 +1,7 @@
 <?php
-	
+	require_once "Connection.php";
+
+
 	/*
 	*Recordset is the database class, which will do the CRUD for you
 	* DELETE
@@ -15,6 +17,7 @@
 		private $row = [];
 		private $rowArray = [];
 		private $index = -1;
+		private $conn;
 
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
@@ -30,7 +33,7 @@
 			{
 				exit("Exit reason: Argument one passed at construct is not of type: String");
 			}
-
+			$this->conn = Connection::setConnection("local");
 			$this->table = $table;
 
 			$this->fireQuery($query);
@@ -72,7 +75,6 @@
 					"update" => "UPDATE",
 					"insert" => "INSERT",
 					"delete" => "DELETE"
-
 				];
 
 				/*
@@ -83,9 +85,6 @@
 				$insert = $haystack["insert"];
 				$delete = $haystack["delete"];
 
-				$explodedSQL = explode(" ", $sql);
-				$sqlCommand = $explodedSQL[0];
-
 				$completedQuery = $this->conn->prepare($sql);
 				
 				/*
@@ -93,7 +92,7 @@
 				* Retrieve data
 				* else do whatever the query has set
 				*/
-				if(strpos($sqlCommand, $select) > -1)
+				if(strpos($sql, $select) > -1)
 				{
 
 					$completedQuery->execute();
@@ -114,20 +113,22 @@
 							$columnKeys = array_keys($row);
 							$this->row = $columnKeys;
 
+							if ($this->index === 0) {
+								$this->next();
+							}
+
 							$this->setIndex();
 
 							foreach ($columnKeys as $key => $columnName) 
 							{
 								$this->rowArray[$this->index][$columnName] = $row[$columnName];
 							}
-
-							$this->next();
 						}
 					}
 				}
 				else if (strpos($sqlCommand, $update) > -1 || strpos($sqlCommand, $insert) > -1 || strpos($sqlCommand, $delete) > -1)
 				{
-					//$completedQuery->execute();
+					$completedQuery->execute();
 				}
 				else
 				{
@@ -175,6 +176,43 @@
 
 		}
 
+		public function getRow($key = NULL, $errorSuppression = false)
+		{
+			if (is_numeric($key)) 
+			{
+				if (is_null($key)) 
+				{
+					return $this->rowArray;
+				}
+				else if (array_key_exists($key, $this->rowArray))
+				{
+					return $this->rowArray[$key];
+				}
+				else
+				{
+					if ($errorSuppression) 
+					{
+						exit("Script exit. Class: Recordset <br/> Method: getRow <br/> Search: {$key} <br/> The given search could not be found.");
+					}
+					else 
+					{
+						return;
+					}
+				}
+			}
+			else
+			{
+				if ($errorSuppression) 
+				{
+					exit("Script exit. Class: Recordset <br/> Method: getRow <br/> Search: {$key} <br/> The given search is not numeric.");
+				}
+				else 
+				{
+					return;
+				}
+			}
+		}
+
 		/*
 		* function hasField checks whether the array_key exists which was requested.
 		* it adds no benefits, besides less code.
@@ -184,9 +222,16 @@
 			return in_array($key, $this->row);
 		}
 
-		private function next()
+		public function next()
 		{
 			$this->index = $this->index + 1;
+
+			return $this->index;
+		}
+
+		public function previous()
+		{
+			$this->index = $this->index - 1;
 
 			return $this->index;
 		}
@@ -195,12 +240,30 @@
 		{
 			if ($this->index === -1) 
 			{
-				return $this->index + 1;
+				$this->index = $this->index + 1;
+
+				return $this->index;
+			}
+		}
+
+		private function resetIndex()
+		{
+			if ($this->index > -1) 
+			{
+				$this->index = $this->index - 1;
+
+				return $this->index;
 			}
 		}
 
 	}
 
 
-$recordTest = new Recordset("UPDATE", "table");
+$recordTest = new Recordset("SELECT * FROM `test` WHERE id = '1'", "test");
+
+// foreach($recordTest->getField("t1") as $k => $v)
+// {
+// 	echo "{$k}: {$v} <br/>";
+// }
+echo $recordTest->getField("t2");
 ?>
