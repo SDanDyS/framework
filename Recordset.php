@@ -16,7 +16,11 @@
 		*/
 		private $row = [];
 		private $rowArray = [];
+
 		private $index = -1;
+
+		private $errorSuppression;
+
 		private $conn;
 
 		/*
@@ -26,15 +30,16 @@
 		*/
 		private $table;
 
-		public function __construct($query, $table)
+		public function __construct($query, $table, $errorSuppression = true)
 		{
 
 			if (!is_string($query)) 
 			{
-				exit("Exit reason: Argument one passed at construct is not of type: String");
+				$this->getSuppressionCaller(__METHOD__, $query);
 			}
 			$this->conn = Connection::setConnection("local");
 			$this->table = $table;
+			$this->errorSuppression = $errorSuppression;
 
 			$this->fireQuery($query);
 		}
@@ -107,23 +112,29 @@
 					*/
 					if ($num_of_rows > 0)
 					{
+						$this->setIndex();
+
 						while ($row = $result->fetch_assoc())
 						{
 							$columnKeys = NULL;
 							$columnKeys = array_keys($row);
 							$this->row = $columnKeys;
 
-							if ($this->index === 0) {
-								$this->next();
-							}
-
-							$this->setIndex();
-
 							foreach ($columnKeys as $key => $columnName) 
 							{
 								$this->rowArray[$this->index][$columnName] = $row[$columnName];
 							}
+
+							/*
+							* increment $this->index with 1.
+							*/
+							$this->next();
 						}
+
+						/*
+						* Reset $this->index, so during fetch time $this->index starts at 0.
+						*/
+						$this->resetIndex();
 					}
 				}
 				else if (strpos($sqlCommand, $update) > -1 || strpos($sqlCommand, $insert) > -1 || strpos($sqlCommand, $delete) > -1)
@@ -132,6 +143,7 @@
 				}
 				else
 				{
+					//CHANGE THIS LATER, SO ALL QUERIES WILL PASS.
 					exit("Query failed. No INSERT, SELECT, UPDATE, DELETE set in query. The given query selector is: {$sqlCommand}");
 				}
 			}
@@ -142,14 +154,12 @@
 		*/
 		public function setField($key, $value)
 		{
-
 			$this->setIndex();
 
 			if ($this->hasField($key)) 
 			{
 				$this->rowArray[$this->index][$key] = $value;
 			}
-
 		}
 
 		/*
@@ -157,7 +167,6 @@
 		*/
 		public function getField($key)
 		{
-
 			$this->setIndex();
 
 			/*
@@ -171,45 +180,37 @@
 			}
 			else
 			{
-				return;
+				$this->getSuppressionCaller(__METHOD__, $key);
 			}
-
 		}
 
-		public function getRow($key = NULL, $errorSuppression = false)
+		public function getRow($key = NULL)
 		{
-			if (is_numeric($key)) 
+			if (is_null($key)) 
 			{
-				if (is_null($key)) 
-				{
-					return $this->rowArray;
-				}
-				else if (array_key_exists($key, $this->rowArray))
-				{
-					return $this->rowArray[$key];
-				}
-				else
-				{
-					if ($errorSuppression) 
-					{
-						exit("Script exit. Class: Recordset <br/> Method: getRow <br/> Search: {$key} <br/> The given search could not be found.");
-					}
-					else 
-					{
-						return;
-					}
-				}
+				return $this->rowArray;
+			}
+			else if (array_key_exists($key, $this->rowArray))
+			{
+				var_dump($key);
+				return $this->rowArray[$key];
 			}
 			else
 			{
-				if ($errorSuppression) 
-				{
-					exit("Script exit. Class: Recordset <br/> Method: getRow <br/> Search: {$key} <br/> The given search is not numeric.");
-				}
-				else 
-				{
-					return;
-				}
+				$this->getSuppressionCaller(__METHOD__, $key);
+			}
+		}
+
+		//MOVE METHOD TO DEDICATED ERROR HANDLING CLASS.
+		private function getSuppressionCaller($error, $clause)
+		{
+			if ($this->errorSuppression) 
+			{
+				return;
+			}
+			else
+			{
+				exit("{$error} <br/> Developer input: {$clause} <br/> Developer input failed. Check manual for further instructions.");
 			}
 		}
 
@@ -250,7 +251,7 @@
 		{
 			if ($this->index > -1) 
 			{
-				$this->index = $this->index - 1;
+				$this->index = -1;
 
 				return $this->index;
 			}
@@ -259,11 +260,12 @@
 	}
 
 
-$recordTest = new Recordset("SELECT * FROM `test` WHERE id = '1'", "test");
+$recordTest = new Recordset(0, "test");
 
 // foreach($recordTest->getField("t1") as $k => $v)
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-echo $recordTest->getField("t2");
+$t = $recordTest->getRow(0);
+echo $t["id"];
 ?>
