@@ -30,18 +30,18 @@
 		*/
 		private $table;
 
-		public function __construct($query, $table, $errorSuppression = true)
+		public function __construct($query, $table, $errorSuppression = true, $databaseConnection = "local")
 		{
 
 			if (!is_string($query)) 
 			{
 				$this->getSuppressionCaller(__METHOD__, $query);
 			}
-			$this->conn = Connection::setConnection("local");
+			$this->conn = Connection::setConnection($databaseConnection);
 			$this->table = $table;
 			$this->errorSuppression = $errorSuppression;
 
-			$this->fireQuery($query);
+			$this->executeQuery($query);
 		}
 
 		/*
@@ -64,12 +64,12 @@
 					}
 				}
 
-				$this->fireQuery();
+				$this->executeQuery();
 			}
 
 		}
 
-		private function fireQuery($sql = NULL)
+		private function executeQuery($sql = NULL)
 		{
 
 			if (!is_null($sql)) 
@@ -82,13 +82,11 @@
 					"delete" => "DELETE"
 				];
 
-				/*
-				* SQL commands
-				*/
-				$select = $haystack["select"];
-				$update = $haystack["update"];
-				$insert = $haystack["insert"];
-				$delete = $haystack["delete"];
+				
+			// 	* SQL commands
+
+			 	$select = $haystack["select"];
+
 
 				$completedQuery = $this->conn->prepare($sql);
 				
@@ -107,18 +105,19 @@
 					$num_of_rows = $result->num_rows;
 
 					/*
-					* number of rows bigger than 0
-					* loop through the rows and add it 
+					* loop through the rows and add it
+					* do not check whether the amount of rows is bigger than 0
+					* there is no response needed if the resultset is equal to 0
+					* if the resultset is 0, there is no need to fetch data, it's simply set to fetch the keys 
 					*/
-					if ($num_of_rows > 0)
-					{
 						$this->setIndex();
 
-						while ($row = $result->fetch_assoc())
+						while ($row = $result->fetch_assoc() || !$row = $result->fetch_assoc())
 						{
 							$columnKeys = NULL;
 							$columnKeys = array_keys($row);
 							$this->row = $columnKeys;
+							//return $this->row;
 
 							foreach ($columnKeys as $key => $columnName) 
 							{
@@ -135,16 +134,10 @@
 						* Reset $this->index, so during fetch time $this->index starts at 0.
 						*/
 						$this->resetIndex();
-					}
-				}
-				else if (strpos($sqlCommand, $update) > -1 || strpos($sqlCommand, $insert) > -1 || strpos($sqlCommand, $delete) > -1)
+					
+				} else
 				{
 					$completedQuery->execute();
-				}
-				else
-				{
-					//CHANGE THIS LATER, SO ALL QUERIES WILL PASS.
-					exit("Query failed. No INSERT, SELECT, UPDATE, DELETE set in query. The given query selector is: {$sqlCommand}");
 				}
 			}
 		}
@@ -260,12 +253,12 @@
 	}
 
 
-$recordTest = new Recordset(0, "test");
+$recordTest = new Recordset("SELECT * FROM `test` WHERE 0", "test");
 
 // foreach($recordTest->getField("t1") as $k => $v)
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-$t = $recordTest->getRow(0);
-echo $t["id"];
+$t = $recordTest->getRow();
+var_dump($recordTest);
 ?>
