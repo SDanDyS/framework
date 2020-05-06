@@ -13,8 +13,15 @@
 	{
 		/*
 		* $row will keep the database table its column names
+		* $rowArray will keep the fetched/inserted data
+		* $index decides what the count will be for $rowArray
+		* $table sets the table name
+		* $conn sets the connection for the table to retrieve/insert from
+		* $errorSuppression "decides" whether errors should be thrown, such as undefined etc.
 		*/
 		private $row = [];
+		private $typeOfRow = [];
+
 		private $rowArray = [];
 
 		private $index = -1;
@@ -106,22 +113,22 @@
 
 					/*
 					* loop through the rows and add it
-					* do not check whether the amount of rows is bigger than 0
-					* there is no response needed if the resultset is equal to 0
 					* if the resultset is 0, there is no need to fetch data, it's simply set to fetch the keys 
 					*/
+					if ($num_of_rows > 0) 
+					{
+
 						$this->setIndex();
 
-						while ($row = $result->fetch_assoc() || !$row = $result->fetch_assoc())
+						while ($row = $result->fetch_assoc())
 						{
 							$columnKeys = NULL;
 							$columnKeys = array_keys($row);
 							$this->row = $columnKeys;
-							//return $this->row;
 
-							foreach ($columnKeys as $key => $columnName) 
+							foreach ($row as $key => $columnName) 
 							{
-								$this->rowArray[$this->index][$columnName] = $row[$columnName];
+								$this->rowArray[$this->index][$key] = $row[$key];
 							}
 
 							/*
@@ -134,6 +141,26 @@
 						* Reset $this->index, so during fetch time $this->index starts at 0.
 						*/
 						$this->resetIndex();
+					} else
+					{
+						$emptyDataRetrieval = $this->conn->prepare("SHOW COLUMNS FROM {$this->table}");
+
+						$emptyDataRetrieval->execute();
+
+						$result = $emptyDataRetrieval->get_result();
+						
+						$i = $this->setIndex();
+
+						while ($row = $result->fetch_assoc()) 
+						{
+							$this->row[$i] = $row["Field"];
+							echo $this->row[$i];
+							echo $this->typeOfRow[$i] = $row["Type"] . " <br/>";
+							$i = $this->next();
+						}
+
+						$i = $this->resetIndex();
+					}
 					
 				} else
 				{
@@ -244,7 +271,7 @@
 		{
 			if ($this->index > -1) 
 			{
-				$this->index = -1;
+				$this->index = $this->index = -1;
 
 				return $this->index;
 			}
