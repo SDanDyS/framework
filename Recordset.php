@@ -61,7 +61,7 @@
 			* if it IS empty, abort action and let the code execute and finish without calling any methods
 			* note: do NOT exit the script. This could lead to code breaking or having undesired behavior.
 			*/
-			if (!empty($_POST)) 
+			if (count($_POST) > 0) 
 			{
 				foreach ($_POST as $key => $value) 
 				{
@@ -78,6 +78,39 @@
 
 		private function executeQuery($sql = NULL)
 		{
+			/*
+			* Retrieve the column names and types when method executeQuery is fired
+			*/
+			$columnRetriever = $this->conn->prepare("SHOW COLUMNS FROM {$this->table}");
+
+			$columnRetriever->execute();
+
+			/*
+			* Store the fetched result
+			*/
+			$result = $columnRetriever->get_result();
+			
+			/*
+			* Set index count to 0
+			*/
+			//$i = $this->setIndex();
+
+			while ($row = $result->fetch_assoc()) 
+			{
+				$this->row[$row["Field"]]["Field"] = $row["Field"];
+				$this->row[$row["Field"]]["Type"] = $row["Type"];
+				$this->row[$row["Field"]]["Null"] = $row["Null"];
+				$this->row[$row["Field"]]["Key"] = $row["Key"];
+				$this->row[$row["Field"]]["Default"] = $row["Default"];
+				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
+				//$this->typeOfRow[$i] = $row["Type"];
+				//$i = $this->next();
+			}
+
+			/*
+			* Reset index count to -1
+			*/
+			//$i = $this->resetIndex();
 
 			if (!is_null($sql)) 
 			{
@@ -89,20 +122,26 @@
 					"delete" => "DELETE"
 				];
 
+				$sqlExplosion = explode(" ", $sql);
+				$sqlAction = $sqlExplosion[0];
+
 				
 			// 	* SQL commands
 
 			 	$select = $haystack["select"];
+			 	$insert = $haystack["insert"];
+			 	$update = $haystack["update"];
+			 	$delete = $haystack["delete"];
 
 
 				$completedQuery = $this->conn->prepare($sql);
-				
+
 				/*
 				* There has been a SELECT statement
 				* Retrieve data
 				* else do whatever the query has set
 				*/
-				if(strpos($sql, $select) > -1)
+				if($sqlAction === $select)
 				{
 
 					$completedQuery->execute();
@@ -122,10 +161,6 @@
 
 						while ($row = $result->fetch_assoc())
 						{
-							$columnKeys = NULL;
-							$columnKeys = array_keys($row);
-							$this->row = $columnKeys;
-
 							foreach ($row as $key => $columnName) 
 							{
 								$this->rowArray[$this->index][$key] = $row[$key];
@@ -141,30 +176,15 @@
 						* Reset $this->index, so during fetch time $this->index starts at 0.
 						*/
 						$this->resetIndex();
-					} else
-					{
-						$emptyDataRetrieval = $this->conn->prepare("SHOW COLUMNS FROM {$this->table}");
-
-						$emptyDataRetrieval->execute();
-
-						$result = $emptyDataRetrieval->get_result();
-						
-						$i = $this->setIndex();
-
-						while ($row = $result->fetch_assoc()) 
-						{
-							$this->row[$i] = $row["Field"];
-							echo $this->row[$i];
-							echo $this->typeOfRow[$i] = $row["Type"] . " <br/>";
-							$i = $this->next();
-						}
-
-						$i = $this->resetIndex();
 					}
 					
 				} else
 				{
 					$completedQuery->execute();
+					if ($sqlAction === $insert || $sqlAction === $update)
+					{
+						$completedQuery->insert_id;
+					}
 				}
 			}
 		}
@@ -188,13 +208,13 @@
 		public function getField($key)
 		{
 			$this->setIndex();
-
+			// return $this->row;
 			/*
 			* if key exists, return the requested key
 			* else return nothing (silence).
 			* returning empty will prevent PHP from throwing an error.
 			*/
-			if ($this->hasField($key)) 
+			if ($this->hasField($key, $this->row)) 
 			{
 				return $this->rowArray[$this->index][$key];
 			}
@@ -212,7 +232,6 @@
 			}
 			else if (array_key_exists($key, $this->rowArray))
 			{
-				var_dump($key);
 				return $this->rowArray[$key];
 			}
 			else
@@ -238,9 +257,17 @@
 		* function hasField checks whether the array_key exists which was requested.
 		* it adds no benefits, besides less code.
 		*/
-		private function hasField($key)
+		private function hasField($key, $haystack, $strict = false)
 		{
-			return in_array($key, $this->row);
+			foreach ($haystack as $item) {
+
+				if (($strict ? $item === $key : $item == $key) || (is_array($item) && $this->hasField($key, $item, $strict))) 
+				{
+					return true;
+				}
+    		}
+
+    		return false;
 		}
 
 		public function next()
@@ -279,13 +306,14 @@
 
 	}
 
-
-$recordTest = new Recordset("SELECT * FROM `test` WHERE 0", "test");
+//INSERT INTO `test` (t1) VALUES('2')
+$recordTest = new Recordset("SELECT * FROM `test` WHERE id = 1", "test");
 
 // foreach($recordTest->getField("t1") as $k => $v)
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-$t = $recordTest->getRow();
-var_dump($recordTest);
+//$t = $recordTest->getField("t1");
+echo $recordTest->getField("t3");
+//var_dump($t);
 ?>
