@@ -65,7 +65,7 @@
 			{
 				foreach ($_POST as $key => $value) 
 				{
-					if ($this->hasField($key)) 
+					if ($this->hasField($key, $this->row))
 					{
 						$this->setField($key, $value);
 					}
@@ -90,27 +90,16 @@
 			*/
 			$result = $columnRetriever->get_result();
 			
-			/*
-			* Set index count to 0
-			*/
-			//$i = $this->setIndex();
 
 			while ($row = $result->fetch_assoc()) 
 			{
-				$this->row[$row["Field"]]["Field"] = $row["Field"];
+				echo $this->row[$row["Field"]]["Field"] = $row["Field"];
 				$this->row[$row["Field"]]["Type"] = $row["Type"];
 				$this->row[$row["Field"]]["Null"] = $row["Null"];
 				$this->row[$row["Field"]]["Key"] = $row["Key"];
 				$this->row[$row["Field"]]["Default"] = $row["Default"];
 				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
-				//$this->typeOfRow[$i] = $row["Type"];
-				//$i = $this->next();
 			}
-
-			/*
-			* Reset index count to -1
-			*/
-			//$i = $this->resetIndex();
 
 			if (!is_null($sql)) 
 			{
@@ -181,11 +170,76 @@
 				} else
 				{
 					$completedQuery->execute();
+
 					if ($sqlAction === $insert || $sqlAction === $update)
 					{
 						$completedQuery->insert_id;
 					}
 				}
+			} else
+			{
+
+			}
+		}
+
+		private function selectQuery()
+		{
+			$uniqueID = NULL;
+			$uniqueRow = NULL;
+
+			foreach ($this->row as $entryArray) 
+			{
+				if ($entryArray["Key"] === "PRI")
+				{
+					$uniqueID = $entryArray["Field"];
+				}
+			}
+
+			$uniqueRow = $this->row[$uniqueID];
+
+			if ($this->getField($uniqueID) == "") 
+			{
+				$this->setField($uniqueID, 0);
+			}
+			
+			$sql = "SELECT * FROM `{$this->table}` WHERE {$uniqueID} = ?";
+
+			$selectQuery = $this->conn->prepare($sql);
+
+			$selectQuery->bind_param("i", $uniqueSelector);
+
+			$uniqueSelector = $this->getField($uniqueID);
+
+			$selectQuery->execute();
+
+			$result = $selectQuery->get_result();
+
+			$num_of_rows = $result->num_rows;
+
+			if ($num_of_rows > 0) 
+			{
+				$this->update();
+			} else
+			{
+				$this->insert();
+			}
+		}
+
+		private function insertQuery()
+		{
+			$createQuery = NULL;
+			$createQuery = "INSERT INTO `{$this->table}` (";
+			foreach ($_POST as $key => $value)
+			{
+				$createQuery .= $key;
+			}
+			$createQuery .= ") VALUES (";
+
+			$this->setIndex();
+
+			foreach ($this->rowArray[$this->index] as $key => $value) 
+			{
+				# code...
 			}
 		}
 
@@ -196,7 +250,7 @@
 		{
 			$this->setIndex();
 
-			if ($this->hasField($key)) 
+			if ($this->hasField($key, $this->row))
 			{
 				$this->rowArray[$this->index][$key] = $value;
 			}
@@ -307,13 +361,13 @@
 	}
 
 //INSERT INTO `test` (t1) VALUES('2')
-$recordTest = new Recordset("SELECT * FROM `test` WHERE id = 1", "test");
+$recordTest = new Recordset("SELECT * FROM `test` WHERE id = 0", "test");
 
 // foreach($recordTest->getField("t1") as $k => $v)
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-//$t = $recordTest->getField("t1");
-echo $recordTest->getField("t3");
-//var_dump($t);
+$t = $recordTest->getRow();
+//echo $recordTest->getField("t3");
+var_dump($t);
 ?>
