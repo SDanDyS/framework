@@ -71,8 +71,9 @@
 					}
 				}
 
-				$this->executeQuery();
+				
 			}
+			$this->executeQuery();
 
 		}
 
@@ -81,7 +82,7 @@
 			/*
 			* Retrieve the column names and types when method executeQuery is fired
 			*/
-			$columnRetriever = $this->conn->prepare("SHOW COLUMNS FROM {$this->table}");
+			$columnRetriever = $this->conn->prepare("SHOW COLUMNS FROM `{$this->table}`");
 
 			$columnRetriever->execute();
 
@@ -93,7 +94,7 @@
 
 			while ($row = $result->fetch_assoc()) 
 			{
-				echo $this->row[$row["Field"]]["Field"] = $row["Field"];
+				$this->row[$row["Field"]]["Field"] = $row["Field"];
 				$this->row[$row["Field"]]["Type"] = $row["Type"];
 				$this->row[$row["Field"]]["Null"] = $row["Null"];
 				$this->row[$row["Field"]]["Key"] = $row["Key"];
@@ -169,23 +170,38 @@
 					
 				} else
 				{
+					/*
+					* execute the query if it does not contain a SELECT statement
+					*/
 					$completedQuery->execute();
 
+					/*
+					* if the query contains an update or insert, retrieve the unique key. 
+					*/
 					if ($sqlAction === $insert || $sqlAction === $update)
 					{
-						$completedQuery->insert_id;
+						/*
+						* loop through each element and check whether it's the primary key
+						* if it is the primary key, set the field to the fetched ID 
+						*/
+						foreach ($this->row as $entryArray) 
+						{
+							if ($entryArray["Key"] === "PRI")
+							{
+								$uniqueID = $entryArray["Field"];
+								$this->setField($uniqueID, $completedQuery->insert_id);
+							}
+						}
 					}
 				}
 			} else
 			{
-
+				$this->selectQuery();
 			}
 		}
 
 		private function selectQuery()
 		{
-			$uniqueID = NULL;
-			$uniqueRow = NULL;
 
 			foreach ($this->row as $entryArray) 
 			{
@@ -195,14 +211,12 @@
 				}
 			}
 
-			$uniqueRow = $this->row[$uniqueID];
-
 			if ($this->getField($uniqueID) == "") 
 			{
 				$this->setField($uniqueID, 0);
 			}
 			
-			$sql = "SELECT * FROM `{$this->table}` WHERE {$uniqueID} = ?";
+			$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
 
 			$selectQuery = $this->conn->prepare($sql);
 
@@ -218,10 +232,10 @@
 
 			if ($num_of_rows > 0) 
 			{
-				$this->update();
+			//	$this->update();
 			} else
 			{
-				$this->insert();
+			//	$this->insert();
 			}
 		}
 
@@ -309,7 +323,8 @@
 
 		/*
 		* function hasField checks whether the array_key exists which was requested.
-		* it adds no benefits, besides less code.
+		* it is an expansion of in_array(). 
+		* the function will check whether the multidimensional array contains the value.
 		*/
 		private function hasField($key, $haystack, $strict = false)
 		{
@@ -361,13 +376,13 @@
 	}
 
 //INSERT INTO `test` (t1) VALUES('2')
-$recordTest = new Recordset("SELECT * FROM `test` WHERE id = 0", "test");
+$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 1", "test");
 
 // foreach($recordTest->getField("t1") as $k => $v)
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-$t = $recordTest->getRow();
+$t = $recordTest->save();
 //echo $recordTest->getField("t3");
-var_dump($t);
+//var_dump($t);
 ?>
