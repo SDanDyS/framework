@@ -30,6 +30,8 @@
 
 		private $conn;
 
+		private $types = [];
+
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
 		* the script at any given time.
@@ -47,6 +49,7 @@
 			$this->conn = Connection::setConnection($databaseConnection);
 			$this->table = $table;
 			$this->errorSuppression = $errorSuppression;
+			$this->types = ["s", "i", "d", "b"];
 
 			$this->executeQuery($query);
 		}
@@ -184,6 +187,7 @@
 						* loop through each element and check whether it's the primary key
 						* if it is the primary key, set the field to the fetched ID 
 						*/
+						$uniqueID = NULL;
 						foreach ($this->row as $entryArray) 
 						{
 							if ($entryArray["Key"] === "PRI")
@@ -202,19 +206,29 @@
 
 		private function selectQuery()
 		{
-
+			$uniqueID = NULL;
+			$uniqueIDType = NULL;
+			$requiredRow = NULL;
 			foreach ($this->row as $entryArray) 
 			{
 				if ($entryArray["Key"] === "PRI")
 				{
 					$uniqueID = $entryArray["Field"];
+					$uniqueIDType = $entryArray["Type"];
+					$requiredRow = $this->row[$uniqueID];
 				}
 			}
 
-			if ($this->getField($uniqueID) == "") 
+			/*
+			* if the primary key is set, but there is no value given to it, set to 0
+			* this will ensure the query won't fail.
+			*/
+			if ($this->getField($uniqueID) == "" || is_null($this->getField($uniqueID))) 
 			{
 				$this->setField($uniqueID, 0);
 			}
+
+			//s,d,i,b
 			
 			$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
 
