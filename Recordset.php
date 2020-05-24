@@ -263,6 +263,8 @@
 		{
 			$createQuery = NULL;
 			$bindPARAM = NULL;
+			$completeSet = NULL;
+
 			$createQuery = "INSERT INTO `{$this->table}` (";
 
 			$this->setIndex();
@@ -284,6 +286,18 @@
 				}
 				$bindPARAM .= "s";
 			}
+
+			$stmt = $this->conn->prepare($createQuery);
+
+			$param = [&$bindPARAM];
+			
+			foreach($this->rowArray[$this->index] as $value)
+			{
+				$param[] = &$value;
+			}
+			call_user_func_array(array($stmt, "bind_param"), $param);
+			
+			$stmt->execute();
 		}
 
 		/*
@@ -407,11 +421,22 @@
 //INSERT INTO `test` (t1) VALUES('2')
 $recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 1", "test");
 
-// foreach($recordTest->getField("t1") as $k => $v)
-// {
-// 	echo "{$k}: {$v} <br/>";
-// }
-//$t = $recordTest->save();
-//echo $recordTest->getField("t3");
-//var_dump($t);
+if (count($_POST) > 0)
+{
+	$recordTest->save();
+}
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<form method="POST">
+		<input type="text" name="testVAR" />
+		<input type="number" name="testINT" />
+		<input type="number" steps="0.01" name="testDEC" />
+		<button type="submit">submit</button>
+	</form>
+</body>
+</html>
