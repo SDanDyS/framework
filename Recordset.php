@@ -262,20 +262,27 @@
 		private function insertQuery()
 		{
 			$createQuery = NULL;
+			$bindPARAM = NULL;
 			$createQuery = "INSERT INTO `{$this->table}` (";
-			foreach($this->row as $singleArray)
-			{
-				if ($this->getField($singleArray["Field"]) !== "" || !is_null($this->getField($singleArray["Field"]))) {
-					$createQuery .= $singleArray["Field"];
-                }
-			}
-			$createQuery .= ") VALUES (";
 
 			$this->setIndex();
-
-			foreach ($this->rowArray[$this->index] as $key => $value) 
+			foreach($this->rowArray[$this->index] as $key => $value)
 			{
-				# code...
+				$createQuery .= " {$key}, ";
+			}
+			
+			$createQuery .= ") VALUES (";
+
+			for ($i = 0; $i < count($this->rowArray[$this->index]); $i++)
+			{
+				if ($i === count($this->rowArray[$this->index] - 1)) 
+				{
+					$createQuery .= "?)";
+				} else 
+				{
+					$createQuery .= "?, ";
+				}
+				$bindPARAM .= "s";
 			}
 		}
 
