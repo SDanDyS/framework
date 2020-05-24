@@ -49,7 +49,7 @@
 			$this->conn = Connection::setConnection($databaseConnection);
 			$this->table = $table;
 			$this->errorSuppression = $errorSuppression;
-			$this->types = ["s", "i", "d", "b"];
+			$this->getTableColumns();
 
 			$this->executeQuery($query);
 		}
@@ -73,14 +73,12 @@
 						$this->setField($key, $value);
 					}
 				}
-
-				
 			}
 			$this->executeQuery();
 
 		}
 
-		private function executeQuery($sql = NULL)
+		private function getTableColumns()
 		{
 			/*
 			* Retrieve the column names and types when method executeQuery is fired
@@ -103,7 +101,11 @@
 				$this->row[$row["Field"]]["Key"] = $row["Key"];
 				$this->row[$row["Field"]]["Default"] = $row["Default"];
 				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
-			}
+			}		
+		}
+
+		private function executeQuery($sql = NULL)
+		{
 
 			if (!is_null($sql)) 
 			{
@@ -234,7 +236,11 @@
 
 			$selectQuery = $this->conn->prepare($sql);
 
-			$selectQuery->bind_param("i", $uniqueSelector);
+			/*
+			* Set all the type arguments to string
+			* This is done, because type jugling at the time of writing could not be done by the developer
+			*/
+			$selectQuery->bind_param("s", $uniqueSelector);
 
 			$uniqueSelector = $this->getField($uniqueID);
 
@@ -257,9 +263,11 @@
 		{
 			$createQuery = NULL;
 			$createQuery = "INSERT INTO `{$this->table}` (";
-			foreach ($_POST as $key => $value)
+			foreach($this->row as $singleArray)
 			{
-				$createQuery .= $key;
+				if ($this->getField($singleArray["Field"]) !== "" || !is_null($this->getField($singleArray["Field"]))) {
+					$createQuery .= $singleArray["Field"];
+                }
 			}
 			$createQuery .= ") VALUES (";
 
@@ -396,7 +404,7 @@ $recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 1", "test");
 // {
 // 	echo "{$k}: {$v} <br/>";
 // }
-$t = $recordTest->save();
+//$t = $recordTest->save();
 //echo $recordTest->getField("t3");
 //var_dump($t);
 ?>
