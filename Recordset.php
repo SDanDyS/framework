@@ -71,6 +71,7 @@
 					if ($this->hasField($key, $this->row))
 					{
 						$this->setField($key, $value);
+						echo $this->getField($key);
 					}
 				}
 			}
@@ -101,7 +102,22 @@
 				$this->row[$row["Field"]]["Key"] = $row["Key"];
 				$this->row[$row["Field"]]["Default"] = $row["Default"];
 				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
+
+				$this->setField($row["Field"], "");
 			}		
+		}
+
+		private function getPrimaryKey()
+		{
+			$uniqueID = NULL;
+			foreach ($this->row as $entryArray) 
+			{
+				if ($entryArray["Key"] === "PRI")
+				{
+					$uniqueID = $entryArray["Field"];
+				}
+			}
+			return $uniqueID;
 		}
 
 		private function executeQuery($sql = NULL)
@@ -186,18 +202,11 @@
 					if ($sqlAction === $insert || $sqlAction === $update)
 					{
 						/*
-						* loop through each element and check whether it's the primary key
-						* if it is the primary key, set the field to the fetched ID 
+						* call the primary key
+						* if it is the primary key, set the field to the fetched ID
 						*/
-						$uniqueID = NULL;
-						foreach ($this->row as $entryArray) 
-						{
-							if ($entryArray["Key"] === "PRI")
-							{
-								$uniqueID = $entryArray["Field"];
-								$this->setField($uniqueID, $completedQuery->insert_id);
-							}
-						}
+						$uniqueID = $this->getPrimaryKey();
+						$this->setField($uniqueID, $completedQuery->insert_id);
 					}
 				}
 			} else
@@ -208,24 +217,15 @@
 
 		private function selectQuery()
 		{
-			$uniqueID = NULL;
-			$uniqueIDType = NULL;
 			$requiredRow = NULL;
-			foreach ($this->row as $entryArray) 
-			{
-				if ($entryArray["Key"] === "PRI")
-				{
-					$uniqueID = $entryArray["Field"];
-					$uniqueIDType = $entryArray["Type"];
-					$requiredRow = $this->row[$uniqueID];
-				}
-			}
+			
+			$uniqueID = $this->getPrimaryKey();
 
 			/*
 			* if the primary key is set, but there is no value given to it, set to 0
 			* this will ensure the query won't fail.
 			*/
-			if ($this->getField($uniqueID) == "" || is_null($this->getField($uniqueID))) 
+			if ($this->getField($uniqueID) == "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
 			{
 				$this->setField($uniqueID, 0);
 			}
@@ -255,49 +255,100 @@
 			//	$this->update();
 			} else
 			{
-			//	$this->insert();
+				$this->insertQuery();
 			}
 		}
 
 		private function insertQuery()
 		{
 			$createQuery = NULL;
+			$placeholders = NULL;
 			$bindPARAM = NULL;
 			$completeSet = NULL;
+			$counter = 0;
 
 			$createQuery = "INSERT INTO `{$this->table}` (";
 
+			/*
+			* Set index count to 0
+			*/
 			$this->setIndex();
+
+			/*
+			* Start looping through the required elements and create a query string
+			*/
 			foreach($this->rowArray[$this->index] as $key => $value)
 			{
-				$createQuery .= " {$key}, ";
+				/*
+				* If the primary key equals the key in the loop
+				* Check whether the primary key equals 0
+				* If yes, return the loop and go on with the next key
+				*/
+				if ($this->getPrimaryKey() == $key && $this->getField($this->getPrimaryKey()) == 0)
+				{
+					$counter++;
+					continue;
+				}
+				/*
+				* If the required field is empty, set to NULL
+				*/
+				if ($value === "")
+				{
+					$this->setField($key, NULL);
+				}
+				/*
+				* Check whether the end of the loop has been reached
+				* Yes, start closing the query string
+				* No, keep the query string open
+				*/
+				if ($counter === count($this->rowArray[$this->index]) - 1) 
+				{
+					$placeholders .= "?)";
+					$createQuery .= "{$key}";
+				} else
+				{
+					$placeholders .= "?,";
+					$createQuery .= "{$key},";
+				}
+
+				$bindPARAM .= "s";
+
+				$counter++;
 			}
 			
 			$createQuery .= ") VALUES (";
 
-			for ($i = 0; $i < count($this->rowArray[$this->index]); $i++)
-			{
-				if ($i === count($this->rowArray[$this->index] - 1)) 
-				{
-					$createQuery .= "?)";
-				} else 
-				{
-					$createQuery .= "?, ";
-				}
-				$bindPARAM .= "s";
-			}
+			/*
+			* Create the complete query string
+			*/
+			$completeSet = "{$createQuery}{$placeholders}";
 
-			$stmt = $this->conn->prepare($createQuery);
+			/*
+			* Create the query object
+			*/
+			$stmt = $this->conn->prepare($completeSet);
 
 			$param = [&$bindPARAM];
 			
-			foreach($this->rowArray[$this->index] as $value)
+			foreach($this->rowArray[$this->index] as $key => $value)
 			{
+				if ($this->getPrimaryKey() == $key && $this->getField($this->getPrimaryKey()) == 0)
+				{
+					continue;
+				}
 				$param[] = &$value;
 			}
-			call_user_func_array(array($stmt, "bind_param"), $param);
 			
+			call_user_func_array(array($stmt, "bind_param"), $param);
+			echo $completeSet;
 			$stmt->execute();
+
+			$this->setField($this->getPrimaryKey(), $stmt->insert_id);
+
+			/*
+			* Reset $this->index, so during fetch time $this->index starts at 0.
+			*/
+			$this->resetIndex();
 		}
 
 		/*
@@ -419,7 +470,7 @@
 	}
 
 //INSERT INTO `test` (t1) VALUES('2')
-$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 1", "test");
+$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 0", "test");
 
 if (count($_POST) > 0)
 {
@@ -433,9 +484,8 @@ if (count($_POST) > 0)
 </head>
 <body>
 	<form method="POST">
-		<input type="text" name="testVAR" />
-		<input type="number" name="testINT" />
-		<input type="number" steps="0.01" name="testDEC" />
+		<input type="text" name="testVAR" value=<?=$recordTest->getField("testVAR");?> >
+		<input type="number" name="testINT" >
 		<button type="submit">submit</button>
 	</form>
 </body>
