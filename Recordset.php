@@ -71,7 +71,6 @@
 					if ($this->hasField($key, $this->row))
 					{
 						$this->setField($key, $value);
-						echo $this->getField($key);
 					}
 				}
 			}
@@ -93,7 +92,9 @@
 			*/
 			$result = $columnRetriever->get_result();
 			
-
+			/*
+			* Store the retrieved information of the columns
+			*/
 			while ($row = $result->fetch_assoc()) 
 			{
 				$this->row[$row["Field"]]["Field"] = $row["Field"];
@@ -332,15 +333,23 @@
 			
 			foreach($this->rowArray[$this->index] as $key => $value)
 			{
-				if ($this->getPrimaryKey() == $key && $this->getField($this->getPrimaryKey()) == 0)
+			//IS ZERO CHECK REQUIRED? IF THE NUMBER OF ROWS IN SELECT WAS BIGGER IT'LL REFER ITSELF TO AN UPDATE
+				if ($this->getPrimaryKey() == $key)
 				{
 					continue;
 				}
+				//echo "{$value} <br/>";
 				$param[] = &$value;
+				//echo "{$value} <br/>";
+			}
+
+			foreach($param as $k => $v)
+			{
+				echo "{$k}: {$v} <br/>";
 			}
 			
 			call_user_func_array(array($stmt, "bind_param"), $param);
-			echo $completeSet;
+
 			$stmt->execute();
 
 			$this->setField($this->getPrimaryKey(), $stmt->insert_id);
@@ -475,6 +484,8 @@ $recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 0", "test");
 if (count($_POST) > 0)
 {
 	$recordTest->save();
+	echo $recordTest->getField("test_id");
+	exit();
 }
 ?>
 <!DOCTYPE html>
@@ -484,8 +495,8 @@ if (count($_POST) > 0)
 </head>
 <body>
 	<form method="POST">
-		<input type="text" name="testVAR" value=<?=$recordTest->getField("testVAR");?> >
-		<input type="number" name="testINT" >
+		<input type="text" name="testVAR" >
+		<input type="text" name="testINT" >
 		<button type="submit">submit</button>
 	</form>
 </body>
