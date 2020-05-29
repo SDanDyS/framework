@@ -55,15 +55,103 @@
 		}
 
 		/*
-		* call save(), to insert, select, delete, update
+		* call save() to start the CRUD process
 		*/
-		public function save()
+		public function save($mixture = NULL)
 		{
 			/*
-			* if $_POST is not empty, start looping through it to assign keys and values to write to database
-			* if it IS empty, abort action and let the code execute and finish without calling any methods
-			* note: do NOT exit the script. This could lead to code breaking or having undesired behavior.
+			* Check in what way the request was send
+			* Based on the REQUEST method, request the method to save
+			* If for some reason the method does not exist, call suppressionCaller
+			* NOTICE: Send an argument along to save, to fetch both GET and POST.
+			* Send a hierarchy argument along, to decide which one should overwrite
 			*/
+			$action = "saveBy{$_SERVER['REQUEST_METHOD']}";
+			if (is_null($mixture))
+			{
+				if (method_exists($this, $action))
+				{
+					$this->$action();
+				} else
+				{
+					$this->suppressionCaller(__METHOD__, $action);
+				}			
+			} else
+			{
+				$this->getMixedMETHOD($mixture);
+			}
+		}
+
+		private function getMixedMETHOD($mixture)
+		{
+			$fetchMethods = ["POST/GET" => "saveByPOSTMixture", "GET/POST" => "saveByGETMixture", "POST" => "saveByPOST", "GET" => "saveByGET"];
+
+			$explosion = explode(",", $mixture);
+
+			$keys = array_keys($explosion);
+
+				if (in_array(strtoupper($mixture), $keys))
+				{
+					if(array_key_exists($key, $fetchMethods))
+					{
+						$action = $fetchMethods[$key];
+						$this->$action();
+					}				
+				}
+			
+		}
+
+		private function saveByPOSTMixture()
+		{
+			/*
+			* Combination between GET and POST
+			* In which the $_POST method is the leading method
+			*/
+			if (count($_POST) > 0) 
+			{
+				foreach ($_POST as $key => $value) 
+				{
+					if ($this->hasField($key, $this->row))
+					{
+						if (isset($_GET[$key]))
+						{
+							$value = "{$_POST[$key]}{$_GET[$key]}";
+						}
+						$this->setField($key, $value);
+					}
+					$this->executeQuery();
+				}
+			}
+		}
+
+		private function saveByGETMixture()
+		{
+			/*
+			* Combination between GET and POST
+			* In which the $_GET method is the leading method
+			*/
+			if (count($_GET) > 0)
+			{
+				foreach ($_GET as $key => $value) 
+				{
+					if ($this->hasField($key, $this->row))
+					{
+						if (isset($_POST[$key]))
+						{
+							$value = "{$_GET[$key]}{$_POST[$key]}";
+						}
+						$this->setField($key, $value);
+					}
+				}
+				$this->executeQuery();
+			}		
+		}
+
+		/*
+		* if $_POST is not empty, start looping through it to assign keys and values to write to database
+		*/
+		private function saveByPOST()
+		{
 			if (count($_POST) > 0) 
 			{
 				foreach ($_POST as $key => $value) 
@@ -73,9 +161,26 @@
 						$this->setField($key, $value);
 					}
 				}
-			}
-			$this->executeQuery();
+				$this->executeQuery();
+			}	
+		}
 
+		/*
+		* if $_GET is not empty, start looping through it to assign keys and values to write to database
+		*/
+		private function saveByGET()
+		{
+			if (count($_GET) > 0)
+			{
+				foreach ($_GET as $key => $value)
+				{
+					if ($this->hasField($key))
+					{
+						$this->setField($key, $value);
+					}
+				}
+				$this->executeQuery();
+			}
 		}
 
 		private function getTableColumns()
@@ -329,26 +434,21 @@
 			*/
 			$stmt = $this->conn->prepare($completeSet);
 
-			$param = [&$bindPARAM];
-			
+			$args = [];
+
 			foreach($this->rowArray[$this->index] as $key => $value)
 			{
-			//IS ZERO CHECK REQUIRED? IF THE NUMBER OF ROWS IN SELECT WAS BIGGER IT'LL REFER ITSELF TO AN UPDATE
 				if ($this->getPrimaryKey() == $key)
 				{
 					continue;
 				}
-				//echo "{$value} <br/>";
-				$param[] = &$value;
-				//echo "{$value} <br/>";
+				$args[] = $value;
 			}
 
-			foreach($param as $k => $v)
-			{
-				echo "{$k}: {$v} <br/>";
-			}
-			
-			call_user_func_array(array($stmt, "bind_param"), $param);
+			/*
+			* Bind the argument array and unpack it
+			*/
+			$stmt->bind_param($bindPARAM, ...$args);
 
 			$stmt->execute();
 
@@ -483,7 +583,7 @@ $recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 0", "test");
 
 if (count($_POST) > 0)
 {
-	$recordTest->save();
+	$recordTest->save("POST/GET, GET/POST, POST, GET");
 	echo $recordTest->getField("test_id");
 	exit();
 }
