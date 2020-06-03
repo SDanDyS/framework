@@ -39,19 +39,28 @@
 		*/
 		private $table;
 
-		public function __construct($query, $table, $errorSuppression = true, $databaseConnection = "local")
+		public function __construct($query, $table, $errorSuppression = true)
 		{
 
-			if (!is_string($query)) 
+			if(Connection::getRemoteHost() === "localhost")
 			{
-				$this->getSuppressionCaller(__METHOD__, $query);
+				$this->conn = Connection::setConnection("localhost");
+			} else 
+			{
+				$this->conn = Connection::setConnection("master");
+			
 			}
-			$this->conn = Connection::setConnection($databaseConnection);
-			$this->table = $table;
 			$this->errorSuppression = $errorSuppression;
+
+			$this->table = $table;
+
 			$this->getTableColumns();
 
-			$this->executeQuery($query);
+			if (!empty($query)) 
+			{
+				$this->executeQuery($query);
+			}
+
 		}
 
 		/*
@@ -86,19 +95,16 @@
 		{
 			$fetchMethods = ["POST/GET" => "saveByPOSTMixture", "GET/POST" => "saveByGETMixture", "POST" => "saveByPOST", "GET" => "saveByGET"];
 
-			$explosion = explode(",", $mixture);
+			$request = $mixture;
 
-			$keys = array_keys($explosion);
-
-				if (in_array(strtoupper($mixture), $keys))
-				{
-					if(array_key_exists($key, $fetchMethods))
-					{
-						$action = $fetchMethods[$key];
-						$this->$action();
-					}				
-				}
-			
+			if(array_key_exists($request, $fetchMethods))
+			{
+				$action = $fetchMethods[$request];
+				$this->$action();
+			} else
+			{
+				$this->getSuppressionCaller(__METHOD__, $mixture);
+			}
 		}
 
 		private function saveByPOSTMixture()
@@ -335,8 +341,6 @@
 			{
 				$this->setField($uniqueID, 0);
 			}
-
-			//s,d,i,b
 			
 			$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
 
@@ -358,7 +362,7 @@
 
 			if ($num_of_rows > 0) 
 			{
-			//	$this->update();
+				$this->updateQuery();
 			} else
 			{
 				$this->insertQuery();
@@ -390,7 +394,7 @@
 				* Check whether the primary key equals 0
 				* If yes, return the loop and go on with the next key
 				*/
-				if ($this->getPrimaryKey() == $key && $this->getField($this->getPrimaryKey()) == 0)
+				if ($this->getPrimaryKey() == $key)
 				{
 					$counter++;
 					continue;
@@ -458,6 +462,49 @@
 			* Reset $this->index, so during fetch time $this->index starts at 0.
 			*/
 			$this->resetIndex();
+		}
+
+		private function updateQuery()
+		{
+			$createQuery = NULL;
+			$bindPARAM = NULL;
+			$args = [];
+			$counter = 0;
+
+			$createQuery = "UPDATE `{$this->table}` SET";
+
+			$this->setIndex();
+
+			foreach ($this->rowArray[$this->index] as $key => $value)
+			{
+				if ($this->getPrimaryKey() == $key)
+				{
+					$counter++;
+					continue;
+				}
+
+				$bindPARAM .= "s";
+				$args[] = $value;
+
+				if ($counter === count($this->rowArray[$this->index]) - 1)
+				{
+					$createQuery .= " {$key} = ? ";
+					$createQuery .= "WHERE {$this->getPrimaryKey()} = ?";
+					$args[] = $this->getField("{$this->getPrimaryKey()}");
+				} else
+				{
+					$createQuery .= " {$key} = ?, ";
+				}//UPDATE DOES NOT WORK. FIND OUT WHAT'S WRONG TOMRORW'
+
+				$counter++;
+			}
+			$this->resetIndex();
+
+			$stmt = $this->conn->prepare($createQuery);
+			//exit($createQuery);
+			$stmt->bind_param($bindPARAM, ...$args);
+
+			$stmt->execute();
 		}
 
 		/*
@@ -579,12 +626,17 @@
 	}
 
 //INSERT INTO `test` (t1) VALUES('2')
-$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = 0", "test");
+$id = $_GET["test_id"] ?? 0;
+	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
+	//echo $recordTest->getField("testVAR");
+	//echo $recordTest->getField("testINT");
 
 if (count($_POST) > 0)
 {
-	$recordTest->save("POST/GET, GET/POST, POST, GET");
-	echo $recordTest->getField("test_id");
+	$recordTest->save();
+	//echo $recordTest->getField("testVAR");
+	//echo $recordTest->getField("testINT");
+	header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
 	exit();
 }
 ?>
@@ -595,8 +647,8 @@ if (count($_POST) > 0)
 </head>
 <body>
 	<form method="POST">
-		<input type="text" name="testVAR" >
-		<input type="text" name="testINT" >
+		<input type="text" name="testVAR" value=<?php echo "{$recordTest->getField('testVAR')}"; ?> >
+		<input type="number" name="testINT" value=<?php echo "{$recordTest->getField('testINT')}"; ?> >
 		<button type="submit">submit</button>
 	</form>
 </body>

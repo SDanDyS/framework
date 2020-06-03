@@ -8,6 +8,7 @@
 		/*
 		* $server stashes all the connections
 		*/
+		private static $host;
 		private static $server = [];
 
 		public function __construct($server, $dbServer, $dbUserName, $dbPwd, $dbName)
@@ -26,6 +27,13 @@
 
 				self::$server[$server] = $databaseConnection;
 
+			}
+
+			if ($_SERVER["REMOTE_ADDR"] == "127.0.0.1" || $_SERVER["REMOTE_ADDR"] == "::1")
+			{
+				$host = "localhost";
+			} else {
+				$host = "master";
 			}
 
 		}
@@ -53,8 +61,14 @@
 			return self::getServer($key);
 		}
 
+		public static function getRemoteHost()
+		{
+			return self::$host;
+		}
+
 	}
 
 	//INST TEST CONNECTION
-	new Connection("local", "localhost", "root", "", "testdb");
+	new Connection("localhost", "localhost", "root", "", "testdb");
+	new Connection("master", "localhost", "root", "", "testdb");
 ?>
