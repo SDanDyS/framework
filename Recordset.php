@@ -371,11 +371,20 @@
 
 		private function insertQuery()
 		{
+			/*
+			* Instantiate variables
+			*/
 			$createQuery = NULL;
 			$placeholders = NULL;
 			$bindPARAM = NULL;
 			$completeSet = NULL;
 			$counter = 0;
+
+			/*
+			* Array to push values which will be bound later on
+			* This way SQL injection is prevented
+			*/
+			$args = [];
 
 			$createQuery = "INSERT INTO `{$this->table}` (";
 
@@ -391,7 +400,6 @@
 			{
 				/*
 				* If the primary key equals the key in the loop
-				* Check whether the primary key equals 0
 				* If yes, return the loop and go on with the next key
 				*/
 				if ($this->getPrimaryKey() == $key)
@@ -406,6 +414,7 @@
 				{
 					$this->setField($key, NULL);
 				}
+
 				/*
 				* Check whether the end of the loop has been reached
 				* Yes, start closing the query string
@@ -421,7 +430,15 @@
 					$createQuery .= "{$key},";
 				}
 
+				/*
+				* Types for bind_param();
+				*/
 				$bindPARAM .= "s";
+
+				/*
+				* Values / References pushed
+				*/
+				$args[] = $value;
 
 				$counter++;
 			}
@@ -438,24 +455,19 @@
 			*/
 			$stmt = $this->conn->prepare($completeSet);
 
-			$args = [];
-
-			foreach($this->rowArray[$this->index] as $key => $value)
-			{
-				if ($this->getPrimaryKey() == $key)
-				{
-					continue;
-				}
-				$args[] = $value;
-			}
-
 			/*
 			* Bind the argument array and unpack it
 			*/
 			$stmt->bind_param($bindPARAM, ...$args);
 
+			/*
+			* Execute the created SQL object
+			*/
 			$stmt->execute();
 
+			/*
+			* Return inserted key and assign it to its respective field
+			*/
 			$this->setField($this->getPrimaryKey(), $stmt->insert_id);
 
 			/*
@@ -466,45 +478,94 @@
 
 		private function updateQuery()
 		{
+			/*
+			* Instantiate variables
+			*/
 			$createQuery = NULL;
 			$bindPARAM = NULL;
-			$args = [];
 			$counter = 0;
+
+			/*
+			* Array to push values which will be bound later on
+			* This way SQL injection is prevented
+			*/
+			$args = [];
 
 			$createQuery = "UPDATE `{$this->table}` SET";
 
+			/*
+			* Set index count to 0
+			*/
 			$this->setIndex();
 
+			/*
+			* Start looping through the required elements and create a query string
+			*/
 			foreach ($this->rowArray[$this->index] as $key => $value)
 			{
+
+				/*
+				* Types for bind_param();
+				*/
+				$bindPARAM .= "s";
+				
+				/*
+				* If the primary key equals the key in the loop
+				* If yes, return the loop and go on with the next key
+				*/
 				if ($this->getPrimaryKey() == $key)
 				{
 					$counter++;
 					continue;
 				}
 
-				$bindPARAM .= "s";
+				/*
+				* Values / References pushed
+				*/
 				$args[] = $value;
 
+				/*
+				* Check whether the end of the loop has been reached
+				* Yes, start closing the query string
+				* No, keep the query string open
+				*/
 				if ($counter === count($this->rowArray[$this->index]) - 1)
 				{
 					$createQuery .= " {$key} = ? ";
 					$createQuery .= "WHERE {$this->getPrimaryKey()} = ?";
+
+					/*
+					* Get the primary key and its value
+					* Push it so the WHERE clause can be completed
+					*/
 					$args[] = $this->getField("{$this->getPrimaryKey()}");
 				} else
 				{
 					$createQuery .= " {$key} = ?, ";
-				}//UPDATE DOES NOT WORK. FIND OUT WHAT'S WRONG TOMRORW'
+				}
 
 				$counter++;
 			}
-			$this->resetIndex();
 
+			/*
+			* Create the query object
+			*/
 			$stmt = $this->conn->prepare($createQuery);
-			//exit($createQuery);
+
+			/*
+			* Bind the argument array and unpack it
+			*/
 			$stmt->bind_param($bindPARAM, ...$args);
 
+			/*
+			* Execute the created SQL object
+			*/
 			$stmt->execute();
+
+			/*
+			* Reset $this->index, so during fetch time $this->index starts at 0.
+			*/
+			$this->resetIndex();
 		}
 
 		/*
@@ -644,8 +705,14 @@ if (count($_POST) > 0)
 <html>
 <head>
 	<title></title>
+
+	<style>
+	body {
+		color: white;
+	}
+	</style>
 </head>
-<body>
+<body style="background-color: black;">
 	<form method="POST">
 		<input type="text" name="testVAR" value=<?php echo "{$recordTest->getField('testVAR')}"; ?> >
 		<input type="number" name="testINT" value=<?php echo "{$recordTest->getField('testINT')}"; ?> >
