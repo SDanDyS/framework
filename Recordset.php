@@ -20,6 +20,7 @@
 		* $errorSuppression "decides" whether errors should be thrown, such as undefined etc.
 		*/
 		private $row = [];
+
 		private $typeOfRow = [];
 
 		private $rowArray = [];
@@ -41,15 +42,8 @@
 
 		public function __construct($query, $table, $errorSuppression = true)
 		{
+			$this->conn = Connection::setConnection();
 
-			if(Connection::getRemoteHost() === "localhost")
-			{
-				$this->conn = Connection::setConnection("localhost");
-			} else 
-			{
-				$this->conn = Connection::setConnection("master");
-			
-			}
 			$this->errorSuppression = $errorSuppression;
 
 			$this->table = $table;
@@ -60,7 +54,6 @@
 			{
 				$this->executeQuery($query);
 			}
-
 		}
 
 		/*
@@ -76,6 +69,7 @@
 			* Send a hierarchy argument along, to decide which one should overwrite
 			*/
 			$action = "saveBy{$_SERVER['REQUEST_METHOD']}";
+
 			if (is_null($mixture))
 			{
 				if (method_exists($this, $action))
@@ -100,6 +94,7 @@
 			if(array_key_exists($request, $fetchMethods))
 			{
 				$action = $fetchMethods[$request];
+
 				$this->$action();
 			} else
 			{
@@ -186,6 +181,26 @@
 					}
 				}
 				$this->executeQuery();
+			}
+		}
+
+		private function setImages()
+		{
+			if (count($_FILES) > 0) 
+			{
+				foreach($_FILES as $singleFile)
+				{
+					$name = $singleFile["name"];
+					$tmpName = $singleFile["tmp_name"];
+					$type = $singleFile["type"];
+					$size = $singleFile["size"];
+					$error = $singleFile["error"];
+
+					if (!empty($name))
+					{
+					//WORK ON THIS TOMORROW. WORKING ON UPLOADING FILES
+					}
+				}		
 			}
 		}
 
