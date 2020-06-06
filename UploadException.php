@@ -5,7 +5,7 @@
 	{
 		public function __construct($code) 
 		{
-			return $message = $this->codeToMessage($code);
+			return $this->codeToMessage($code);
 			//parent::__construct($message, $code);
 		}
 

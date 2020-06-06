@@ -184,7 +184,7 @@
 			}
 		}
 
-		private function setImages()
+		public function setImages()
 		{
 			if (count($_FILES) > 0) 
 			{
@@ -196,9 +196,31 @@
 					$size = $singleFile["size"];
 					$error = $singleFile["error"];
 
+					/*
+					* Check whether name is empty
+					*/
 					if (!empty($name))
 					{
-					//WORK ON THIS TOMORROW. WORKING ON UPLOADING FILES
+						/*
+						* Check whether the default upload is UPLOAD_ERR_OK
+						*/
+						if ($error === UPLOAD_ERR_OK)
+						{
+							$finfo = new finfo(FILEINFO_MIME_TYPE);
+							$ext = array_search($finfo->file($tmpName), array("jpg" => 'image/jpg', 'png' => 'image/png', 'gif' => 'image/gif',),true);
+							echo $finfo->file($tmpName);
+
+							if ($ext)
+							{
+								echo "{$ext}s";
+							} else 
+							{
+								echo "{$ext}d";
+							}
+						} else
+						{
+							exit(new UploadException($error));
+						}
 					}
 				}		
 			}
@@ -702,18 +724,18 @@
 	}
 
 //INSERT INTO `test` (t1) VALUES('2')
-$id = $_GET["test_id"] ?? 0;
+	$id = $_GET["test_id"] ?? 0;
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
 if (count($_POST) > 0)
 {
-	$recordTest->save();
+	$recordTest->setImages();
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
-	header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
-	exit();
+	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
+	//exit();
 }
 ?>
 <!DOCTYPE html>
@@ -728,9 +750,10 @@ if (count($_POST) > 0)
 	</style>
 </head>
 <body style="background-color: black;">
-	<form method="POST">
+	<form method="POST" enctype="multipart/form-data">
 		<input type="text" name="testVAR" value=<?php echo "{$recordTest->getField('testVAR')}"; ?> >
 		<input type="number" name="testINT" value=<?php echo "{$recordTest->getField('testINT')}"; ?> >
+		<input type="file" name="img" >
 		<button type="submit">submit</button>
 	</form>
 </body>
