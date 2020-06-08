@@ -186,7 +186,7 @@
 			}
 		}
 
-		public function setMimeType($allowedExtensions)
+		public function setExtensionAndMimeType($allowedExtensions = NULL)
 		{
 
 			$mime_map = [
@@ -376,17 +376,27 @@
 				'text/x-scriptzsh'                                                          => 'zsh',
 			];
 
-			$formattedExtensions = str_replace(" ", ",", $allowedExtensions);
-			$formattedExtensions = str_replace(",,", ",", $formattedExtensions);
-			$this->allowedExtensions = explode(",", $formattedExtensions);
 			$this->allowedMIMES = array_keys($mime_map);
 
-			foreach ($this->allowedExtensions as $key => $extension)
+			if (is_null($allowedExtensions))
 			{
-				if (in_array($extension, $mime_map))
+				$this->allowedExtensions = $mime_map;
+			} else
+			{
+				$formattedExtensions = str_replace(" ", ",", $allowedExtensions);
+				$formattedExtensions = str_replace(",,", ",", $formattedExtensions);
+				$settedExtensions = explode(",", $formattedExtensions);
+
+				foreach ($mime_map as $key => $extension)
 				{
-					
-				}
+					if (in_array($extension, $settedExtensions))
+					{
+						$this->$allowedExtensions[$extension] = $key;
+					} else 
+					{
+						$this->suppressionCaller(__METHOD__, $key);
+					}
+				}			
 			}
 			
 		}
