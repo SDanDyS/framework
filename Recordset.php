@@ -33,7 +33,7 @@
 
 		private $allowedExtensions;
 
-		private $allowedMIMES;
+		private $nameDistortion;
 
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
@@ -50,7 +50,11 @@
 
 			$this->table = $table;
 
-			$this->getTableColumns();
+			$this->setTableColumns();
+
+			$this->setExtension();
+
+			$this->setNameDistortion();
 
 			if (!empty($query)) 
 			{
@@ -186,10 +190,11 @@
 			}
 		}
 
-		public function setExtensionAndMimeType($allowedExtensions = NULL)
+		public function setExtension($allowedExtensions = NULL)
 		{
-
-			$mime_map = [
+			
+			//OUT OF USE, BUT REMAINED AS A LIBRARY
+			/*$mime_map = [
 				'video/3gpp2'                                                               => '3g2',
 				'video/3gp'                                                                 => '3gp',
 				'video/3gpp'                                                                => '3gp',
@@ -374,31 +379,190 @@
 				'application/s-compressed'                                                  => 'zip',
 				'multipart/x-zip'                                                           => 'zip',
 				'text/x-scriptzsh'                                                          => 'zsh',
-			];
+			];*/
 
-			$this->allowedMIMES = array_keys($mime_map);
+			$extensionsLibrary = 
+			[
+				// Image formats
+				"IMAGE" => 
+				[
+					'jpg' => 'image/jpeg',
+					'jpeg' => 'image/jpeg',
+					'jpe' => 'image/jpeg',
+					'gif' => 'image/gif',
+					'png' => 'image/png',
+					'bmp' => 'image/bmp',
+					'tif' => 'image/tiff',
+					'tiff' => 'image/tiff',
+					'ico' => 'image/x-icon'
+				],
+				// Video formats
+				"VIDEO" =>
+				[
+					'asf' => 'video/asf',
+					'asx' => 'video/asf',
+					'wax' => 'video/asf',
+					'wmv' => 'video/asf',
+					'wmx' => 'video/asf',
+					'avi' => 'video/avi',
+					'divx' => 'video/divx',
+					'flv' => 'video/x-flv',
+					'mov' => 'video/quicktime',
+					'qt' => 'video/quicktime',
+					'mpeg' => 'video/mpeg',
+					'mpg' => 'video/mpeg',
+					'mpe' => 'video/mpeg',
+					'mp4' => 'video/mp4',
+					'm4v' => 'video/mp4',
+					'ogv' => 'video/ogg',
+					'mkv' => 'video/x-matroska'				
+				],
+				// Text formats
+				"TEXT" =>
+				[
+					'txt' => 'text/plain',
+					'asc' => 'text/plain',
+					'c' => 'text/plain',
+					'cc' => 'text/plain',
+					'h' => 'text/plain',
+					'csv' => 'text/csv',
+					'tsv' => 'text/tab-separated-values',
+					'ics' => 'text/calendar',
+					'rtx' => 'text/richtext',
+					'css' => 'text/css',
+					'htm' => 'text/html',
+					'html' => 'text/html'		
+				],
+				// Audio formats
+				"AUDIO" =>
+				[
+					'mp3' => 'audio/mpeg',
+					'm4a' => 'audio/mpeg',
+					'm4b' => 'audio/mpeg',
+					'ra' => 'audio/x-realaudio',
+					'ram' => 'audio/x-realaudio',
+					'wav' => 'audio/wav',
+					'ogg' => 'audio/ogg',
+					'oga' => 'audio/ogg',
+					'mid' => 'audio/midi',
+					'midi' => 'audio/midi',
+					'wma' => 'audio/wma',
+					'mka' => 'audio/x-matroska'			
+				],
+				// Misc application formats
+				"MISC" =>
+				[
+					'rtf' => 'application/rtf',
+					'js' => 'application/javascript',
+					'pdf' => 'application/pdf',
+					'swf' => 'application/x-shockwave-flash',
+					'class' => 'application/java',
+					'tar' => 'application/x-tar',
+					'zip' => 'application/zip',
+					'gz' => 'application/x-gzip',
+					'gzip' => 'application/x-gzip',
+					'rar' => 'application/rar',
+					'7z' => 'application/x-7z-compressed'
+				],
+				// MS Office formats
+				"MSOFFICE" =>
+				[
+					'doc' => 'application/msword',
+					'pot' => 'application/vnd.ms-powerpoint',
+					'pps' => 'application/vnd.ms-powerpoint',
+					'ppt' => 'application/vnd.ms-powerpoint',
+					'wri' => 'application/vnd.ms-write',
+					'xla' => 'application/vnd.ms-excel',
+					'xls' => 'application/vnd.ms-excel',
+					'xlt' => 'application/vnd.ms-excel',
+					'xlw' => 'application/vnd.ms-excel',
+					'mdb' => 'application/vnd.ms-access',
+					'mpp' => 'application/vnd.ms-project',
+					'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+					'docm' => 'application/vnd.ms-word.document.macroEnabled.12',
+					'dotx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+					'dotm' => 'application/vnd.ms-word.template.macroEnabled.12',
+					'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					'xlsm' => 'application/vnd.ms-excel.sheet.macroEnabled.12',
+					'xlsb' => 'application/vnd.ms-excel.sheet.binary.macroEnabled.12',
+					'xltx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+					'xltm' => 'application/vnd.ms-excel.template.macroEnabled.12',
+					'xlam' => 'application/vnd.ms-excel.addin.macroEnabled.12',
+					'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+					'pptm' => 'application/vnd.ms-powerpoint.presentation.macroEnabled.12',
+					'ppsx' => 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+					'ppsm' => 'application/vnd.ms-powerpoint.slideshow.macroEnabled.12',
+					'potx' => 'application/vnd.openxmlformats-officedocument.presentationml.template',
+					'potm' => 'application/vnd.ms-powerpoint.template.macroEnabled.12',
+					'ppam' => 'application/vnd.ms-powerpoint.addin.macroEnabled.12',
+					'sldx' => 'application/vnd.openxmlformats-officedocument.presentationml.slide',
+					'sldm' => 'application/vnd.ms-powerpoint.slide.macroEnabled.12',
+					'onetoc' => 'application/onenote',
+					'onetoc2' => 'application/onenote',
+					'onetmp' => 'application/onenote',
+					'onepkg' => 'application/onenote'				
+				],
+				// OpenOffice formats
+				"OPENOFFICE" =>
+				[
+					'odt' => 'application/vnd.oasis.opendocument.text',
+					'odp' => 'application/vnd.oasis.opendocument.presentation',
+					'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+					'odg' => 'application/vnd.oasis.opendocument.graphics',
+					'odc' => 'application/vnd.oasis.opendocument.chart',
+					'odb' => 'application/vnd.oasis.opendocument.database',
+					'odf' => 'application/vnd.oasis.opendocument.formula'				
+				],
+				// WordPerfect formats
+				"WORDPERFECT" =>
+				[
+					'wp' => 'application/wordperfect',
+					'wpd' => 'application/wordperfect',
+					'wpd' => 'application/wordperfect'				
+				]
+			];
 
 			if (is_null($allowedExtensions))
 			{
-				$this->allowedExtensions = $mime_map;
+				foreach ($extensionsLibrary as $innerArray)
+				{
+					foreach($innerArray as $k => $v)
+					{
+						$this->allowedExtensions[$k] = $v;
+					}
+				}
 			} else
 			{
 				$formattedExtensions = str_replace(" ", ",", $allowedExtensions);
 				$formattedExtensions = str_replace(",,", ",", $formattedExtensions);
 				$settedExtensions = explode(",", $formattedExtensions);
 
-				foreach ($mime_map as $key => $extension)
+				foreach ($settedExtensions as $key => $extension)
 				{
-					if (in_array($extension, $settedExtensions))
+					if (array_key_exists($extension, $extensionsLibrary))
 					{
-						$this->$allowedExtensions[$extension] = $key;
-					} else 
+						foreach ($extensionsLibrary[$extension] as $k => $v)
+						{
+							$this->allowedExtensions[$k] = $v;
+							echo $k." : ".$this->allowedExtensions[$k]."<br/>";
+						}
+					} else
 					{
 						$this->suppressionCaller(__METHOD__, $key);
 					}
 				}			
 			}
 			
+		}
+
+		public function setNameDistortion($distortion = TRUE)
+		{
+			$this->nameDistortion = $distortion;
+		}
+
+		public function getNameDistortion()
+		{
+			return $this->nameDistortion;
 		}
 
 		public function setImages()
@@ -423,16 +587,24 @@
 						*/
 						if ($error === UPLOAD_ERR_OK)
 						{
-							$finfo = new finfo(FILEINFO_MIME_TYPE);
-							$mimeType = in_array($finfo->file($tmpName), array("jpg" => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif'),true);
-							echo $finfo->file($tmpName);
+							$dissolvedFileName = explode(".", $name);
+							$fileExtension = strtolower(end($dissolvedFileName));
 
-							if ($mimeType)
+							if (array_key_exists($fileExtension, $this->allowedExtensions))
 							{
-								echo "{$mimeType} FOUND";
-							} else 
-							{
-								echo "{$mimeType} WRONG";
+								$finfo = new finfo(FILEINFO_MIME_TYPE);
+								$mimeType = in_array($finfo->file($tmpName), $this->allowedExtensions, true);
+
+								if ($mimeType && $this->allowedExtensions[$fileExtension] === $finfo->file($tmpName))
+								{
+									if ($this->getDistortion())
+									{
+										$name = uniqid("", true);
+									}
+								} else 
+								{
+									$this->errorSuppression(__METHOD__, $mimeType);
+								}								
 							}
 						} else
 						{
@@ -443,7 +615,7 @@
 			}
 		}
 
-		private function getTableColumns()
+		private function setTableColumns()
 		{
 			/*
 			* Retrieve the column names and types when method executeQuery is fired
@@ -470,7 +642,12 @@
 				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
 
 				$this->setField($row["Field"], "");
-			}		
+			}
+		}
+
+		public function getTableColumns()
+		{
+			return $this->row;
 		}
 
 		private function getPrimaryKey()
@@ -948,12 +1125,14 @@
 
 if (count($_POST) > 0)
 {
-	$recordTest->setImages();
+	$recordTest->setExtension("IMAGE");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
 	//exit();
 }
+
+$recordTest->setExtension("IMAGE");
 ?>
 <!DOCTYPE html>
 <html>
