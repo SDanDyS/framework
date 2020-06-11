@@ -31,9 +31,11 @@
 
 		private $conn;
 
-		private $allowedExtensions;
+		private static $allowedExtensions;
 
-		private $nameDistortion;
+		private static $nameDistortion;
+
+		private static $filePath;
 
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
@@ -52,9 +54,7 @@
 
 			$this->setTableColumns();
 
-			$this->setExtension();
-
-			$this->setNameDistortion();
+			self::setNameDistortion();
 
 			if (!empty($query)) 
 			{
@@ -190,7 +190,7 @@
 			}
 		}
 
-		public function setExtension($allowedExtensions = NULL)
+		public static function setExtension($allowedExtensions = NULL)
 		{
 			
 			//OUT OF USE, BUT REMAINED AS A LIBRARY
@@ -528,7 +528,7 @@
 				{
 					foreach($innerArray as $k => $v)
 					{
-						$this->allowedExtensions[$k] = $v;
+						self::$allowedExtensions[$k] = $v;
 					}
 				}
 			} else
@@ -539,12 +539,14 @@
 
 				foreach ($settedExtensions as $key => $extension)
 				{
+
+					$extension = strtoupper($extension);
+
 					if (array_key_exists($extension, $extensionsLibrary))
 					{
 						foreach ($extensionsLibrary[$extension] as $k => $v)
 						{
-							$this->allowedExtensions[$k] = $v;
-							echo $k." : ".$this->allowedExtensions[$k]."<br/>";
+							self::$allowedExtensions[$k] = $v;
 						}
 					} else
 					{
@@ -555,14 +557,14 @@
 			
 		}
 
-		public function setNameDistortion($distortion = TRUE)
+		public static function setNameDistortion($distortion = TRUE)
 		{
-			$this->nameDistortion = $distortion;
+			self::$nameDistortion = $distortion;
 		}
 
-		public function getNameDistortion()
+		public static function getNameDistortion()
 		{
-			return $this->nameDistortion;
+			return self::$nameDistortion;
 		}
 
 		public function setImages()
@@ -590,18 +592,24 @@
 							$dissolvedFileName = explode(".", $name);
 							$fileExtension = strtolower(end($dissolvedFileName));
 
-							if (array_key_exists($fileExtension, $this->allowedExtensions))
+							if (array_key_exists($fileExtension, self::$allowedExtensions))
 							{
 								$finfo = new finfo(FILEINFO_MIME_TYPE);
-								$mimeType = in_array($finfo->file($tmpName), $this->allowedExtensions, true);
+								$mimeType = in_array($finfo->file($tmpName), self::$allowedExtensions, true);
 
-								if ($mimeType && $this->allowedExtensions[$fileExtension] === $finfo->file($tmpName))
+								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
-									if ($this->getDistortion())
+									if (is_boolean(self::getDistortion()) && self::getDistortion())
 									{
 										$name = uniqid("", true);
+									} else if (self::getDistortion()) && !self::getDistortion())
+									{
+										$name = $name;
+									} else 
+									{
+										$this->errorSuppression(__METHOD__, self::getDistortion());
 									}
-								} else 
+								} else
 								{
 									$this->errorSuppression(__METHOD__, $mimeType);
 								}								
@@ -661,6 +669,16 @@
 				}
 			}
 			return $uniqueID;
+		}
+
+		public static function setFilePath($path)
+		{
+			self::$filePath = "{$_SERVER['DOCUMENT_ROOT']}{$path}";
+		}
+
+		public static function getFilePath()
+		{
+			return self::$filePath;
 		}
 
 		private function executeQuery($sql = NULL)
@@ -1119,20 +1137,18 @@
 
 //INSERT INTO `test` (t1) VALUES('2')
 	$id = $_GET["test_id"] ?? 0;
+	Recordset::setExtension("IMAGE");
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
 if (count($_POST) > 0)
 {
-	$recordTest->setExtension("IMAGE");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
 	//exit();
 }
-
-$recordTest->setExtension("IMAGE");
 ?>
 <!DOCTYPE html>
 <html>
