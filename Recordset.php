@@ -599,6 +599,10 @@
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
+									if(!is_dir(self::getFilePath("filePath")))
+									{
+										mkdir(self::getFilePath("filePath"), self::getFilePath("mode"), self::getFilePath("recursive"));
+									}
 									if (is_bool(self::getDistortion()) && self::getDistortion())
 									{
 										$name = uniqid("", true);
@@ -609,6 +613,10 @@
 									{
 										$this->errorSuppression(__METHOD__, self::getDistortion());
 									}
+
+									$filePath = self::getFilePath("filePath");
+									$completePath = "{$filePath}/{$name}.{$fileExtension}";
+									move_uploaded_file($tmpName, $completePath);
 								} else
 								{
 									$this->errorSuppression(__METHOD__, $mimeType);
@@ -671,14 +679,25 @@
 			return $uniqueID;
 		}
 
-		public static function setFilePath($path)
+		public static function setFilePath(string $path, int $mode = 0777, bool $recursive = FALSE)
 		{
-			self::$filePath = "{$_SERVER['DOCUMENT_ROOT']}/{$path}";
+			self::$filePath["filePath"] = "{$_SERVER['DOCUMENT_ROOT']}/{$path}";
+			self::$filePath["mode"] = $mode;
+			self::$filePath["recursive"] = $recursive;
 		}
 
-		public static function getFilePath()
+		public static function getFilePath($extract = NULL)
 		{
-			return self::$filePath;
+			if (is_null($extract))
+			{
+				return self::$filePath;
+			} else if (self::$filePath[$extract])
+			{
+				return self::$filePath[$extract];
+			} else 
+			{
+				exit("Error:<br/> Developer input: {$extract}<br/> Available options:<br/> <b>filePath</b><br/> <b>mode</b><br/><b>recursive</b><br/>");
+			}
 		}
 
 		private function executeQuery($sql = NULL)
@@ -1138,14 +1157,14 @@
 //INSERT INTO `test` (t1) VALUES('2')
 	$id = $_GET["test_id"] ?? 0;
 	Recordset::setExtension("IMAGE");
-	Recordset::setFilePath("elfsteden/uploads");
-	echo Recordset::getFilePath();
+	Recordset::setFilePath("framework/uploads");
+	//echo Recordset::getFilePath();
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
 if (count($_POST) > 0)
-{
+{$recordTest->setImages();
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
