@@ -599,10 +599,10 @@
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
-									if (is_boolean(self::getDistortion()) && self::getDistortion())
+									if (is_bool(self::getDistortion()) && self::getDistortion())
 									{
 										$name = uniqid("", true);
-									} else if (self::getDistortion()) && !self::getDistortion())
+									} else if (is_bool(self::getDistortion()) && !self::getDistortion())
 									{
 										$name = $name;
 									} else 
@@ -673,7 +673,7 @@
 
 		public static function setFilePath($path)
 		{
-			self::$filePath = "{$_SERVER['DOCUMENT_ROOT']}{$path}";
+			self::$filePath = "{$_SERVER['DOCUMENT_ROOT']}/{$path}";
 		}
 
 		public static function getFilePath()
@@ -1138,6 +1138,8 @@
 //INSERT INTO `test` (t1) VALUES('2')
 	$id = $_GET["test_id"] ?? 0;
 	Recordset::setExtension("IMAGE");
+	Recordset::setFilePath("elfsteden/uploads");
+	echo Recordset::getFilePath();
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
