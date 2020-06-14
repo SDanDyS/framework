@@ -83,7 +83,7 @@
 					$this->$action();
 				} else
 				{
-					$this->suppressionCaller(__METHOD__, $action);
+					self::suppressionCaller(__METHOD__, $action);
 				}			
 			} else
 			{
@@ -104,7 +104,7 @@
 				$this->$action();
 			} else
 			{
-				$this->getSuppressionCaller(__METHOD__, $mixture);
+				self::getSuppressionCaller(__METHOD__, $mixture);
 			}
 		}
 
@@ -550,7 +550,7 @@
 						}
 					} else
 					{
-						$this->suppressionCaller(__METHOD__, $key);
+						self::suppressionCaller(__METHOD__, $key);
 					}
 				}			
 			}
@@ -559,6 +559,10 @@
 
 		public static function setNameDistortion($distortion = TRUE)
 		{
+			if (!is_bool($distortion))
+			{
+				self::getSuppressionCaller(__METHOD__, $distortion);
+			}
 			self::$nameDistortion = $distortion;
 		}
 
@@ -571,7 +575,7 @@
 		{
 			if (count($_FILES) > 0) 
 			{
-				foreach($_FILES as $singleFile)
+				foreach($_FILES as $fileName => $singleFile)
 				{
 					$name = $singleFile["name"];
 					$tmpName = $singleFile["tmp_name"];
@@ -599,27 +603,39 @@
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
-									if(!is_dir(self::getFilePath("filePath")))
+									
+									if (empty(self::getFilePath("filePath")))
 									{
-										mkdir(self::getFilePath("filePath"), self::getFilePath("mode"), self::getFilePath("recursive"));
-									}
-									if (is_bool(self::getDistortion()) && self::getDistortion())
+										self::getSuppressionCaller(__METHOD__, "File path");
+									} else
 									{
-										$name = uniqid("", true);
-									} else if (is_bool(self::getDistortion()) && !self::getDistortion())
-									{
-										$name = $name;
-									} else 
-									{
-										$this->errorSuppression(__METHOD__, self::getDistortion());
-									}
+										if(!is_dir(self::getFilePath("filePath")))
+										{
+											mkdir(self::getFilePath("filePath"), self::getFilePath("mode"), self::getFilePath("recursive"));
+										}
 
-									$filePath = self::getFilePath("filePath");
-									$completePath = "{$filePath}/{$name}.{$fileExtension}";
-									move_uploaded_file($tmpName, $completePath);
+										if (self::$nameDistortion)
+										{
+											$name = uniqid("", true);
+										} else if (!self::$nameDistortion)
+										{
+											$name = $name;
+										} else 
+										{
+											self::errorSuppression(__METHOD__, self::$nameDistortion);
+										}
+
+										$filePath = self::getFilePath("filePath");
+
+										$completePath = "{$filePath}/{$name}.{$fileExtension}";
+
+										$this->setField($fileName, $completePath);
+
+										move_uploaded_file($tmpName, $completePath);
+									}
 								} else
 								{
-									$this->errorSuppression(__METHOD__, $mimeType);
+									self::errorSuppression(__METHOD__, $mimeType);
 								}								
 							}
 						} else
@@ -679,8 +695,32 @@
 			return $uniqueID;
 		}
 
-		public static function setFilePath(string $path, int $mode = 0777, bool $recursive = FALSE)
+		/*
+		* NOTICE:
+		* The mode parameter consists of three octal number components specifying access restrictions for the owner,
+		* the user group in which the owner is in, and to everybody else in this order. 
+		* One component can be computed by adding up the needed permissions for that target user base. 
+		* Number 1 means that you grant execute rights, number 2 means that you make the file writeable, number 4 means that you make the file readable.
+		* Add up these numbers to specify needed rights.
+		* EXAMPLE:
+		* Read and writeable only would be: 2 + 4 = 6.
+		* End result: 0600
+		*/
+		public static function setFilePath($path, $mode = 0777, $recursive = FALSE)
 		{
+			if (!is_string($path))
+			{
+				self::getSuppressionCaller(__METHOD__, $recursive);
+			}
+			if (!is_int($mode))
+			{
+				self::getSuppressionCaller(__METHOD__, $recursive);
+			}
+			if (!is_bool($recursive))
+			{
+				self::getSuppressionCaller(__METHOD__, $recursive);
+			}
+
 			self::$filePath["filePath"] = "{$_SERVER['DOCUMENT_ROOT']}/{$path}";
 			self::$filePath["mode"] = $mode;
 			self::$filePath["recursive"] = $recursive;
@@ -696,9 +736,16 @@
 				return self::$filePath[$extract];
 			} else 
 			{
-				exit("Error:<br/> Developer input: {$extract}<br/> Available options:<br/> <b>filePath</b><br/> <b>mode</b><br/><b>recursive</b><br/>");
+				self::getSuppressionCaller(__METHOD__, $extract);
 			}
 		}
+
+		public static function chmod($filePath, $mode)
+		{
+			chmod($filePath, $mode);
+		}
+
+		//CREATE A FILE WRITE METHOD FOR .HTACCESS Deny from all / Allow from all
 
 		private function executeQuery($sql = NULL)
 		{
@@ -1067,7 +1114,7 @@
 			}
 			else
 			{
-				$this->getSuppressionCaller(__METHOD__, $key);
+				self::getSuppressionCaller(__METHOD__, $key);
 			}
 		}
 
@@ -1083,12 +1130,12 @@
 			}
 			else
 			{
-				$this->getSuppressionCaller(__METHOD__, $key);
+				self::getSuppressionCaller(__METHOD__, $key);
 			}
 		}
 
 		//MOVE METHOD TO DEDICATED ERROR HANDLING CLASS.
-		private function getSuppressionCaller($error, $clause)
+		private static function getSuppressionCaller($error, $clause)
 		{
 			if ($this->errorSuppression) 
 			{
@@ -1156,10 +1203,10 @@
 
 //INSERT INTO `test` (t1) VALUES('2')
 	$id = $_GET["test_id"] ?? 0;
-	Recordset::setExtension("IMAGE");
-	Recordset::setFilePath("framework/uploads");
 	//echo Recordset::getFilePath();
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
+	Recordset::setExtension("IMAGE");
+	Recordset::setFilePath("framework/uploads");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
