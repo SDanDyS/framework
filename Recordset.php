@@ -746,6 +746,41 @@
 		}
 
 		//CREATE A FILE WRITE METHOD FOR .HTACCESS Deny from all / Allow from all
+		//order deny,allow
+		//deny from all
+		//allow from >>>INSERT YOUR ID<<<
+		public static function setFilePermission($request, $overwrite = FALSE)
+		{
+			$file = NULL;
+
+			$filePath = self::getFilePath('filePath');
+
+			if(file_exists("{$filePath}/.htaccess"))
+			{
+				switch ($overwrite)
+				{
+					case TRUE:
+						$file = fopen("{$filePath}/.htaccess", "w+");
+					break;
+
+					case FALSE:
+						$file = fopen("{$filePath}/.htaccess", "a+");
+					break;
+	
+					default:
+						exit(__METHOD__."<br/>Parameter <b>overwrite</b> is not a boolean. Please set this to TRUE or FALSE");
+					break;
+				}
+			} else
+			{
+				$file = fopen("{$filePath}/.htaccess", "w+");
+			}
+
+			$request = $request."\n";
+
+			fwrite($file, $request);
+			fclose($file);
+		}
 
 		private function executeQuery($sql = NULL)
 		{
@@ -1207,11 +1242,13 @@
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	Recordset::setExtension("IMAGE");
 	Recordset::setFilePath("framework/uploads");
+	Recordset::setFilePermission("test420", TRUE);
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
 if (count($_POST) > 0)
-{$recordTest->setImages();
+{
+	//$recordTest->setImages();
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
