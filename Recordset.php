@@ -35,8 +35,6 @@
 
 		private static $nameDistortion;
 
-		private static $filePath;
-
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
 		* the script at any given time.
@@ -695,93 +693,6 @@
 			return $uniqueID;
 		}
 
-		/*
-		* NOTICE:
-		* The mode parameter consists of three octal number components specifying access restrictions for the owner,
-		* the user group in which the owner is in, and to everybody else in this order. 
-		* One component can be computed by adding up the needed permissions for that target user base. 
-		* Number 1 means that you grant execute rights, number 2 means that you make the file writeable, number 4 means that you make the file readable.
-		* Add up these numbers to specify needed rights.
-		* EXAMPLE:
-		* Read and writeable only would be: 2 + 4 = 6.
-		* End result: 0600
-		*/
-		public static function setFilePath($path, $mode = 0777, $recursive = FALSE)
-		{
-			if (!is_string($path))
-			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
-			}
-			if (!is_int($mode))
-			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
-			}
-			if (!is_bool($recursive))
-			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
-			}
-
-			self::$filePath["filePath"] = "{$_SERVER['DOCUMENT_ROOT']}/{$path}";
-			self::$filePath["mode"] = $mode;
-			self::$filePath["recursive"] = $recursive;
-		}
-
-		public static function getFilePath($extract = NULL)
-		{
-			if (is_null($extract))
-			{
-				return self::$filePath;
-			} else if (self::$filePath[$extract])
-			{
-				return self::$filePath[$extract];
-			} else 
-			{
-				self::getSuppressionCaller(__METHOD__, $extract);
-			}
-		}
-
-		public static function chmod($filePath, $mode)
-		{
-			chmod($filePath, $mode);
-		}
-
-		//CREATE A FILE WRITE METHOD FOR .HTACCESS Deny from all / Allow from all
-		//order deny,allow
-		//deny from all
-		//allow from >>>INSERT YOUR ID<<<
-		public static function setFilePermission($request, $overwrite = FALSE)
-		{
-			$file = NULL;
-
-			$filePath = self::getFilePath('filePath');
-
-			if(file_exists("{$filePath}/.htaccess"))
-			{
-				switch ($overwrite)
-				{
-					case TRUE:
-						$file = fopen("{$filePath}/.htaccess", "w+");
-					break;
-
-					case FALSE:
-						$file = fopen("{$filePath}/.htaccess", "a+");
-					break;
-	
-					default:
-						exit(__METHOD__."<br/>Parameter <b>overwrite</b> is not a boolean. Please set this to TRUE or FALSE");
-					break;
-				}
-			} else
-			{
-				$file = fopen("{$filePath}/.htaccess", "w+");
-			}
-
-			$request = $request."\n";
-
-			fwrite($file, $request);
-			fclose($file);
-		}
-
 		private function executeQuery($sql = NULL)
 		{
 
@@ -1242,7 +1153,8 @@
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
 	Recordset::setExtension("IMAGE");
 	Recordset::setFilePath("framework/uploads");
-	Recordset::setFilePermission("test420", TRUE);
+	//Recordset::setDirectoryPermission("Deny from all", TRUE);
+	Recordset::unlink("framework/uploads/.htaccess");
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 
