@@ -1,20 +1,20 @@
 <?php
 	class FilesController
 	{
-		private static $filePath;
+		private  $filePath;
 
-		public static function getUrlBase($path = NULL)
+		public function getUrlBase($path = NULL)
 		{
 			$base = $_SERVER['DOCUMENT_ROOT'];
-
-			if (is_null($path))
-			{
-				return $path;
-			}
 
 			if (!$_SERVER["REMOTE_ADDR"] == "127.0.0.1" || !$_SERVER["REMOTE_ADDR"] == "::1")
 			{
 				$base = str_replace($_SERVER["DOCUMENT_ROOT"], $_SERVER["SERVER_NAME"], $base);
+			}
+
+			if (is_null($path))
+			{
+				return $base;
 			}
 
 			return "{$base}/{$path}";
@@ -31,58 +31,106 @@
 		* Read and writeable only would be: 2 + 4 = 6.
 		* End result: 0600
 		*/
-		public static function setFilePath($path, $mode = 0777, $recursive = FALSE)
+		private function setPath($path, $mode, $recursive = FALSE, $assigner = FALSE)
 		{
 			if (!is_string($path))
 			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
-			}
-			if (!is_int($mode))
-			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
+				exit(__METHOD__."<br/> Argument <b>path</b> is not a string.");
 			}
 			if (!is_bool($recursive))
 			{
-				self::getSuppressionCaller(__METHOD__, $recursive);
+				exit(__METHOD__."<br/> Argument <b>recursive</b> is not a boolean.");
 			}
 
-			self::$filePath["filePath"] = self::getUrlBase($path);
-			self::$filePath["mode"] = $mode;
-			self::$filePath["recursive"] = $recursive;
+			$this->$filePath["path"] = $this->getUrlBase($path);
+			$this->$filePath["mode"] = $mode;
+			$this->$filePath["recursive"] = $recursive;
+			$this->$filePath["assigner"] = $assigner;
+
+			$this->createDirectoryOrFile();
 		}
 
-		public static function getFilePath($extract = NULL)
+
+		public function createDirectory($path, $mode = 0777, $recursive = FALSE)
+		{
+			$this->setPath($path, $mode, $recursive, "DIR");
+		}
+
+
+		public function createFile($path, $mode = "w+", $recursive = FALSE)
+		{
+			$this->setPath($path, $mode, $recursive, "FILE");
+		}
+
+
+		public function getPath($extract = NULL)
 		{
 			if (is_null($extract))
 			{
-				return self::$filePath;
-			} else if (self::$filePath[$extract])
+				return $this->$filePath;
+			} else if ($this->$filePath[$extract])
 			{
-				return self::$filePath[$extract];
+				return $this->$filePath[$extract];
 			} else 
 			{
-				self::getSuppressionCaller(__METHOD__, $extract);
+				exit("Argument <b>{$extract}</b> value could not be retrieved.<br/> Available options:<br/> path<br/>mode<br/>recursive");
 			}
 		}
 
-		public static function chmod($filePath, $mode)
+
+		public static function chmod($path, $mode)
 		{
-			chmod($filePath, $mode);
+			chmod($path, $mode);
 		}
 
-		//CREATE A FILE WRITE METHOD FOR .HTACCESS Deny from all / Allow from all
+
+		private function createDirectoryOrFile()
+		{
+			if ($this->$filePath["assigner"] === "DIR")
+			{
+				if(!is_dir($this->$filePath["path"]))
+				{
+					mkdir($this->$filePath["path"], $this->$filePath["mode"], $this->$filePath["recursive"]);
+				}
+			} else if ($this->$filePath["assigner"] === "FILE")
+			{
+				if (!is_file($this->$filePath["path"]))
+				{
+					$file = fopen($this->$filePath["path"], $this->$filePath["mode"]);
+				}
+			}
+		}
+
+
+		public function setDirectory($path)
+		{
+			$path = $this->getUrlBase($path);
+			
+			if (!is_dir($path))
+			{
+				exit(__METHOD__."<br/> The given path is not a directory.");
+			}
+
+			$this->$filePath["path"] = $path;
+		}
+
+
 		//order deny,allow
 		//deny from all
 		//allow from >>>INSERT YOUR ID<<<
-		public static function setDirectoryPermission($permission, $overwrite = FALSE)
+		public function setDirectoryPermission($permission, $overwrite = FALSE)
 		{
 			$file = NULL;
 
-			$permissionFile = self::getFilePath('filePath')."/.htaccess";
+			$permissionFile = $this->getPath("path")."/.htaccess";
 
 			if(!is_bool($overwrite))
 			{
 				exit(__METHOD__."<br/>Parameter <b>overwrite</b> is not a boolean. Please set this to TRUE or FALSE");
+			}
+			if (!is_dir($this->getPath("path")))
+			{
+				exit("The given path is not a directory. Please set the directory you wish to set a permission for.");
 			}
 
 			if(file_exists($permissionFile))
@@ -113,14 +161,20 @@
 			}
 		}
 
-		public static function unlink($path)
+
+		public function delete($path)
 		{
-			$path = self::getUrlBase($path);
+			$path = $this->getUrlBase($path);
+
 			if(is_dir($path) || is_file($path))
 			{
-				echo "test";
 				unlink($path);
 			}
 		}
 	}
+
+	$obj = new FilesController;
+	$obj->setDirectory("framework/uploads");
+	//FilesController::createFile("framework/uploads/t.php");
+	$obj->setDirectoryPermission("Allow from all", TRUE);
 ?>
