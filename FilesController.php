@@ -86,17 +86,18 @@
 
 		private function createDirectoryOrFile()
 		{
-			if ($this->$filePath["assigner"] === "DIR")
+			if ($this->filePath["assigner"] === "DIR")
 			{
-				if(!is_dir($this->$filePath["path"]))
+				if(!is_dir($this->filePath["path"]))
 				{
-					mkdir($this->$filePath["path"], $this->$filePath["mode"], $this->$filePath["recursive"]);
+					mkdir($this->filePath["path"], $this->filePath["mode"], $this->filePath["recursive"]);
 				}
-			} else if ($this->$filePath["assigner"] === "FILE")
+			} else if ($this->filePath["assigner"] === "FILE")
 			{
-				if (!is_file($this->$filePath["path"]))
+				if (!is_file($this->filePath["path"]))
 				{
-					$file = fopen($this->$filePath["path"], $this->$filePath["mode"]);
+					$file = fopen($this->filePath["path"], $this->filePath["mode"]);
+					//CREATE A WRITE FUNCTION LATER
 				}
 			}
 		}
@@ -111,7 +112,13 @@
 				exit(__METHOD__."<br/> The given path is not a directory.");
 			}
 
-			$this->$filePath["path"] = $path;
+			if (empty($this->filePath["path"]))
+			{
+				$filePermission = self::fileperms($path);
+				$this->filePath["mode"] = $filePermission;
+				$this->filePath["recursive"] = FALSE; 
+			}
+				$this->filePath["path"] = $path;
 		}
 
 
@@ -162,6 +169,12 @@
 		}
 
 
+		public static function fileperms($permissionOfFile)
+		{
+			return substr(sprintf('%o', fileperms($permissionOfFile)), -4);
+		}
+
+
 		public function delete($path)
 		{
 			$path = $this->getUrlBase($path);
@@ -174,7 +187,9 @@
 	}
 
 	$obj = new FilesController;
-	$obj->setDirectory("framework/uploads");
+	$ob = $obj->setDirectory("framework/uploads");
+	echo $ob;
+	//$obj->setDirectory("framework/uploads");
 	//FilesController::createFile("framework/uploads/t.php");
-	$obj->setDirectoryPermission("Allow from all", TRUE);
+	//$obj->setDirectoryPermission("Allow from all", TRUE);
 ?>
