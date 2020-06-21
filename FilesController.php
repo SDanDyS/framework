@@ -7,10 +7,10 @@
 		{
 			$base = $_SERVER['DOCUMENT_ROOT'];
 
-			if (!$_SERVER["REMOTE_ADDR"] == "127.0.0.1" || !$_SERVER["REMOTE_ADDR"] == "::1")
+			/*if (!$_SERVER["REMOTE_ADDR"] == "127.0.0.1" || !$_SERVER["REMOTE_ADDR"] == "::1")
 			{
 				$base = str_replace($_SERVER["DOCUMENT_ROOT"], $_SERVER["SERVER_NAME"], $base);
-			}
+			}*/
 
 			if (is_null($path))
 			{
@@ -31,7 +31,7 @@
 		* Read and writeable only would be: 2 + 4 = 6.
 		* End result: 0600
 		*/
-		private function setPath($path, $mode, $recursive = FALSE, $assigner = FALSE)
+		private function setParams($path, $mode, $recursive = FALSE, $assigner = FALSE)
 		{
 			if (!is_string($path))
 			{
@@ -42,10 +42,10 @@
 				exit(__METHOD__."<br/> Argument <b>recursive</b> is not a boolean.");
 			}
 
-			$this->$filePath["path"] = $this->getUrlBase($path);
-			$this->$filePath["mode"] = $mode;
-			$this->$filePath["recursive"] = $recursive;
-			$this->$filePath["assigner"] = $assigner;
+			$this->filePath["path"] = $this->getUrlBase($path);
+			$this->filePath["mode"] = $mode;
+			$this->filePath["recursive"] = $recursive;
+			$this->filePath["assigner"] = $assigner;
 
 			$this->createDirectoryOrFile();
 		}
@@ -53,24 +53,24 @@
 
 		public function createDirectory($path, $mode = 0777, $recursive = FALSE)
 		{
-			$this->setPath($path, $mode, $recursive, "DIR");
+			$this->setParams($path, $mode, $recursive, "DIR");
 		}
 
 
 		public function createFile($path, $mode = "w+", $recursive = FALSE)
 		{
-			$this->setPath($path, $mode, $recursive, "FILE");
+			$this->setParams($path, $mode, $recursive, "FILE");
 		}
 
 
-		public function getPath($extract = NULL)
+		public function getParams($extract = NULL)
 		{
 			if (is_null($extract))
 			{
-				return $this->$filePath;
-			} else if ($this->$filePath[$extract])
+				return $this->filePath;
+			} else if ($this->filePath[$extract])
 			{
-				return $this->$filePath[$extract];
+				return $this->filePath[$extract];
 			} else 
 			{
 				exit("Argument <b>{$extract}</b> value could not be retrieved.<br/> Available options:<br/> path<br/>mode<br/>recursive");
@@ -129,13 +129,13 @@
 		{
 			$file = NULL;
 
-			$permissionFile = $this->getPath("path")."/.htaccess";
+			$permissionFile = $this->getParams("path")."/.htaccess";
 
 			if(!is_bool($overwrite))
 			{
 				exit(__METHOD__."<br/>Parameter <b>overwrite</b> is not a boolean. Please set this to TRUE or FALSE");
 			}
-			if (!is_dir($this->getPath("path")))
+			if (!is_dir($this->getParams("path")))
 			{
 				exit("The given path is not a directory. Please set the directory you wish to set a permission for.");
 			}
@@ -175,14 +175,31 @@
 		}
 
 
-		public function delete($path)
+		public function deleteDirectory($path)
 		{
 			$path = $this->getUrlBase($path);
 
-			if(is_dir($path) || is_file($path))
+			if(is_dir($path))
 			{
 				unlink($path);
 			}
+		}
+
+		public function deleteFile($path)
+		{
+			$path = $this->getUrlBase($path);
+
+			if(is_file($path))
+			{
+				unlink($path);
+			}
+		}
+
+		public function delete($path)
+		{
+			$path = $this->getUrlBase($path);
+			
+			unlink($path);
 		}
 	}
 

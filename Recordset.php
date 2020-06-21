@@ -36,6 +36,8 @@
 
 		private static $nameDistortion;
 
+		private static $image;
+
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
 		* the script at any given time.
@@ -54,6 +56,8 @@
 			$this->setTableColumns();
 
 			self::setNameDistortion();
+
+			self::setExtension();
 
 			if (!empty($query)) 
 			{
@@ -125,8 +129,11 @@
 						}
 						$this->setField($key, $value);
 					}
-					$this->executeQuery();
 				}
+
+				$this->setImages();
+
+				$this->executeQuery();
 			}
 		}
 
@@ -149,6 +156,9 @@
 						$this->setField($key, $value);
 					}
 				}
+
+				$this->setImages();
+
 				$this->executeQuery();
 			}		
 		}
@@ -167,6 +177,9 @@
 						$this->setField($key, $value);
 					}
 				}
+
+				$this->setImages();
+
 				$this->executeQuery();
 			}	
 		}
@@ -185,6 +198,9 @@
 						$this->setField($key, $value);
 					}
 				}
+
+				$this->setImages();
+
 				$this->executeQuery();
 			}
 		}
@@ -570,6 +586,11 @@
 			return self::$nameDistortion;
 		}
 
+		public static function setImageFile($file)
+		{
+			self::$image = $file;
+		}
+
 		public function setImages()
 		{
 			if (count($_FILES) > 0) 
@@ -602,15 +623,17 @@
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
+
+									$image = self::$image;
 									
-									if (empty(self::getFilePath("filePath")))
+									if (empty($image->getParams("path")))
 									{
 										self::getSuppressionCaller(__METHOD__, "File path");
 									} else
 									{
-										if(!is_dir(self::getFilePath("filePath")))
+										if(!is_dir($image->getParams("path")))
 										{
-											mkdir(self::getFilePath("filePath"), self::getFilePath("mode"), self::getFilePath("recursive"));
+											mkdir($image->getParams("path"), $image->getParams("mode"), $image->getParams("recursive"));
 										}
 
 										if (self::$nameDistortion)
@@ -624,7 +647,7 @@
 											self::errorSuppression(__METHOD__, self::$nameDistortion);
 										}
 
-										$filePath = self::getFilePath("filePath");
+										$filePath = $image->getParams("path");
 
 										$completePath = "{$filePath}/{$name}.{$fileExtension}";
 
@@ -1150,23 +1173,24 @@
 
 //INSERT INTO `test` (t1) VALUES('2')
 	$id = $_GET["test_id"] ?? 0;
-	//echo Recordset::getFilePath();
 	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
-	Recordset::setExtension("IMAGE");
-	Recordset::setFilePath("framework/uploads");
-	//Recordset::setDirectoryPermission("Deny from all", TRUE);
-	Recordset::unlink("framework/uploads/.htaccess");
-	//echo $recordTest->getField("testVAR");
-	//echo $recordTest->getField("testINT");
-
+	$img = new FilesController;
 if (count($_POST) > 0)
-{
+{	
+	
+	Recordset::setExtension("IMAGE");
+	$img->createDirectory("framework/uploads");
+	$img->setDirectoryPermission("Allow from all", TRUE);
+	Recordset::setImageFile($img);
+
+	$recordTest->save();
 	//$recordTest->setImages();
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
 	//exit();
 }
+$img->setDirectoryPermission("Allow from all", TRUE);
 ?>
 <!DOCTYPE html>
 <html>
