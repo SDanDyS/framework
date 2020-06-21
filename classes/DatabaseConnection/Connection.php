@@ -3,6 +3,8 @@
 	* class Connection creates connections for the user
 	* the user can save the connections this way and easily change the localhost to the master connection
 	*/
+
+	namespace DatabaseConnection;
 	class Connection
 	{
 		/*

@@ -1,6 +1,6 @@
 <?php
 
-	//namespace Exception
+	namespace Exception;
 	class UploadException //extends Exception
 	{
 		public function __construct($code) 

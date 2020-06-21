@@ -10,7 +10,8 @@
 	* INSERT
 	* SELECT
 	*/
-	class Recordset 
+	namespace DataHandler;
+	class Recordset
 	{
 		/*
 		* $row will keep the database table its column names
@@ -586,12 +587,12 @@
 			return self::$nameDistortion;
 		}
 
-		public static function setImageFile($file)
+		public static function setImageObject($file)
 		{
 			self::$image = $file;
 		}
 
-		public function setImages()
+		private function setImages()
 		{
 			if (count($_FILES) > 0) 
 			{
@@ -1181,16 +1182,16 @@ if (count($_POST) > 0)
 	Recordset::setExtension("IMAGE");
 	$img->createDirectory("framework/uploads");
 	$img->setDirectoryPermission("Allow from all", TRUE);
-	Recordset::setImageFile($img);
+	Recordset::setImageObject($img);
 
 	$recordTest->save();
+	$img->setDirectoryPermission("Allow from all", TRUE);
 	//$recordTest->setImages();
 	//echo $recordTest->getField("testVAR");
 	//echo $recordTest->getField("testINT");
 	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
 	//exit();
 }
-$img->setDirectoryPermission("Allow from all", TRUE);
 ?>
 <!DOCTYPE html>
 <html>

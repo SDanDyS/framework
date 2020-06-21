@@ -1,4 +1,5 @@
 <?php
+	namespace Files;
 	class FilesController
 	{
 		private  $filePath;
@@ -73,7 +74,7 @@
 				return $this->filePath[$extract];
 			} else 
 			{
-				exit("Argument <b>{$extract}</b> value could not be retrieved.<br/> Available options:<br/> path<br/>mode<br/>recursive");
+				exit(__METHOD__."<br/>Argument <b>{$extract}</b> value could not be retrieved.<br/> Available options:<br/> path<br/>mode<br/>recursive");
 			}
 		}
 

@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\classes"
   ],
-  "SelectedNode": "\\FilesController.php",
+  "SelectedNode": "\\autoloader.php",
   "PreviewInSolutionExplorer": false
 }
