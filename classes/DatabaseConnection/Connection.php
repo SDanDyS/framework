@@ -5,6 +5,7 @@
 	*/
 
 	namespace DatabaseConnection;
+	use \mysqli;
 	class Connection
 	{
 		/*

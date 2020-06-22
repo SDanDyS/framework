@@ -203,11 +203,4 @@
 			unlink($path);
 		}
 	}
-
-	$obj = new FilesController;
-	$ob = $obj->setDirectory("framework/uploads");
-	echo $ob;
-	//$obj->setDirectory("framework/uploads");
-	//FilesController::createFile("framework/uploads/t.php");
-	//$obj->setDirectoryPermission("Allow from all", TRUE);
 ?>

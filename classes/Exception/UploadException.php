@@ -1,5 +1,4 @@
 <?php
-
 	namespace Exception;
 	class UploadException //extends Exception
 	{

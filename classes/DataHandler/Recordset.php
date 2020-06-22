@@ -1,8 +1,6 @@
 <?php
-	require_once "Connection.php";
-	require_once "FilesController.php";
-
-
+	namespace DataHandler;
+	use DatabaseConnection\Connection;
 	/*
 	*Recordset is the database class, which will do the CRUD for you
 	* DELETE
@@ -10,7 +8,6 @@
 	* INSERT
 	* SELECT
 	*/
-	namespace DataHandler;
 	class Recordset
 	{
 		/*
@@ -1171,45 +1168,4 @@
 		}
 
 	}
-
-//INSERT INTO `test` (t1) VALUES('2')
-	$id = $_GET["test_id"] ?? 0;
-	$recordTest = new Recordset("SELECT * FROM `test` WHERE test_id = '{$id}'", "test");
-	$img = new FilesController;
-if (count($_POST) > 0)
-{	
-	
-	Recordset::setExtension("IMAGE");
-	$img->createDirectory("framework/uploads");
-	$img->setDirectoryPermission("Allow from all", TRUE);
-	Recordset::setImageObject($img);
-
-	$recordTest->save();
-	$img->setDirectoryPermission("Allow from all", TRUE);
-	//$recordTest->setImages();
-	//echo $recordTest->getField("testVAR");
-	//echo $recordTest->getField("testINT");
-	//header("Location: Recordset.php?test_id={$recordTest->getField('test_id')}");
-	//exit();
-}
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-	<title></title>
-
-	<style>
-	body {
-		color: white;
-	}
-	</style>
-</head>
-<body style="background-color: black;">
-	<form method="POST" enctype="multipart/form-data">
-		<input type="text" name="testVAR" value=<?php echo "{$recordTest->getField('testVAR')}"; ?> >
-		<input type="number" name="testINT" value=<?php echo "{$recordTest->getField('testINT')}"; ?> >
-		<input type="file" name="img" >
-		<button type="submit">submit</button>
-	</form>
-</body>
-</html>
