@@ -70,8 +70,4 @@
 		}
 
 	}
-
-	//INST TEST CONNECTION
-	new Connection("local", "localhost", "root", "", "testdb");
-	new Connection("master", "localhost", "root", "", "testdb");
 ?>
