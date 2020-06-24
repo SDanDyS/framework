@@ -4,14 +4,9 @@
 	{
 		private  $filePath;
 
-		public function getUrlBase($path = NULL)
+		public static function getUrlBase($path = NULL)
 		{
 			$base = $_SERVER['DOCUMENT_ROOT'];
-
-			/*if (!$_SERVER["REMOTE_ADDR"] == "127.0.0.1" || !$_SERVER["REMOTE_ADDR"] == "::1")
-			{
-				$base = str_replace($_SERVER["DOCUMENT_ROOT"], $_SERVER["SERVER_NAME"], $base);
-			}*/
 
 			if (is_null($path))
 			{
@@ -43,7 +38,7 @@
 				exit(__METHOD__."<br/> Argument <b>recursive</b> is not a boolean.");
 			}
 
-			$this->filePath["path"] = $this->getUrlBase($path);
+			$this->filePath["path"] = self::getUrlBase($path);
 			$this->filePath["mode"] = $mode;
 			$this->filePath["recursive"] = $recursive;
 			$this->filePath["assigner"] = $assigner;
@@ -106,7 +101,7 @@
 
 		public function setDirectory($path)
 		{
-			$path = $this->getUrlBase($path);
+			$path = self::getUrlBase($path);
 			
 			if (!is_dir($path))
 			{
@@ -176,9 +171,9 @@
 		}
 
 
-		public function deleteDirectory($path)
+		public static function deleteDirectory($path)
 		{
-			$path = $this->getUrlBase($path);
+			$path = self::getUrlBase($path);
 
 			if(is_dir($path))
 			{
@@ -186,9 +181,9 @@
 			}
 		}
 
-		public function deleteFile($path)
+		public static function deleteFile($path)
 		{
-			$path = $this->getUrlBase($path);
+			$path = self::getUrlBase($path);
 
 			if(is_file($path))
 			{
@@ -196,11 +191,11 @@
 			}
 		}
 
-		public function delete($path)
+		public static function delete($request)
 		{
-			$path = $this->getUrlBase($path);
+			$request = self::getUrlBase($request);
 			
-			unlink($path);
+			unset($request);
 		}
 	}
 ?>
