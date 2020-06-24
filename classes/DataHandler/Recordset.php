@@ -20,9 +20,9 @@
 		*/
 		private $row = [];
 
-		private $typeOfRow = [];
-
 		private $rowArray = [];
+
+		private $rowArrayRuler = [];
 
 		private $index = -1;
 
@@ -172,7 +172,11 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
-						$this->setField($key, $value);
+						if(!$this->getRowArrayRuler($key))
+						{
+							$this->setRowArrayRuler($key, TRUE);
+							$this->setField($key, $value);
+						}
 					}
 				}
 
@@ -200,6 +204,31 @@
 				$this->setImages();
 
 				$this->executeQuery();
+			}
+		}
+
+		private function setOverwriteRule($key, $overwrite = FALSE)
+		{
+			if($this->hasField($key, $this->row))
+			{
+				$this->rowArrayRuler[$key] = $overwrite;
+			}
+		}
+
+		private function getOverwriteRule($key)
+		{
+			if (key_exists($key, $this->rowArrayRuler))
+			{
+				if ($this->rowArrayRuler[$key])
+				{
+					return TRUE;
+				} else
+				{
+					return FALSE;
+				}
+			} else
+			{
+				return TRUE;
 			}
 		}
 
@@ -1054,13 +1083,27 @@
 		/*
 		* setField initiates the column you wish to set
 		*/
-		public function setField($key, $value)
+		public function setField($key, $value, $overwrite = FALSE)
 		{
 			$this->setIndex();
 
 			if ($this->hasField($key, $this->row))
 			{
-				$this->rowArray[$this->index][$key] = $value;
+				if ($overwrite)
+				{
+					$this->setOverwriteRule($key, TRUE);
+					$this->rowArray[$this->index][$key] = $value;
+				} else if (!$overwrite)
+				{
+					if($this->getOverwriteRule($key))
+					{
+						$this->setOverwriteRule($key, $overwrite);
+						$this->rowArray[$this->index][$key] = $value;
+					} else
+					{
+						$this->setOverwriteRule($key);
+					}				
+				}
 			}
 		}
 
