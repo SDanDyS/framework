@@ -94,6 +94,7 @@
 				{
 					$file = fopen($this->filePath["path"], $this->filePath["mode"]);
 					//CREATE A WRITE FUNCTION LATER
+					fclose($file);
 				}
 			}
 		}
@@ -193,8 +194,6 @@
 
 		public static function delete($request)
 		{
-			$request = self::getUrlBase($request);
-			
 			unset($request);
 		}
 	}

@@ -125,13 +125,15 @@
 						{
 							$value = "{$_POST[$key]}{$_GET[$key]}";
 						}
-						$this->setField($key, $value);
+						$this->setField($key, $value, TRUE);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
+
+				$this->resetOverwriteRule();
 			}
 		}
 
@@ -151,14 +153,16 @@
 						{
 							$value = "{$_GET[$key]}{$_POST[$key]}";
 						}
-						$this->setField($key, $value);
+						$this->setField($key, $value, TRUE);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
-			}		
+
+				$this->resetOverwriteRule();
+			}
 		}
 
 		/*
@@ -172,17 +176,15 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
-						if(!$this->getRowArrayRuler($key))
-						{
-							$this->setRowArrayRuler($key, TRUE);
-							$this->setField($key, $value);
-						}
+						$this->setField($key, $value, TRUE);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
+
+				$this->resetOverwriteRule();
 			}	
 		}
 
@@ -197,7 +199,7 @@
 				{
 					if ($this->hasField($key))
 					{
-						$this->setField($key, $value);
+						$this->setField($key, $value, TRUE);
 					}
 				}
 
@@ -205,6 +207,8 @@
 
 				$this->executeQuery();
 			}
+
+			$this->resetOverwriteRule();
 		}
 
 		private function setOverwriteRule($key, $overwrite = FALSE)
@@ -230,6 +234,11 @@
 			{
 				return TRUE;
 			}
+		}
+
+		private function resetOverwriteRule()
+		{
+			$this->rowArrayRuler = [];
 		}
 
 		public static function setExtension($allowedExtensions = NULL)
@@ -613,9 +622,9 @@
 			return self::$nameDistortion;
 		}
 
-		public static function setImageObject($file)
+		public static function setImageObject($object)
 		{
-			self::$image = $file;
+			self::$image = $object;
 		}
 
 		private function setImages()
@@ -1085,23 +1094,41 @@
 		*/
 		public function setField($key, $value, $overwrite = FALSE)
 		{
+			/*
+			* Set index to 0
+			*/
 			$this->setIndex();
 
+			/*
+			* If the column exists
+			*/
 			if ($this->hasField($key, $this->row))
 			{
+				/*
+				* Check what the state of overwrite is
+				*/
 				if ($overwrite)
 				{
-					$this->setOverwriteRule($key, TRUE);
-					$this->rowArray[$this->index][$key] = $value;
+				/*
+				* If true, check whether the state was already set and whether this is set to true aswell
+				* if overwrite is set to TRUE, but 
+				*/
+					if ($this->getOverwriteRule($key))
+					{
+						/*
+						* If it's set to true, overwriting is allowed by both TRUE and FALSE
+						*/
+						$this->rowArray[$this->index][$key] = $value;
+					}
 				} else if (!$overwrite)
 				{
-					if($this->getOverwriteRule($key))
+					/*
+					* if overwrite is set to FALSE, check whether level is set to either level lower or the same level
+					*/
+					if ($this->getOverwriteRule($key) || !$this->getOverwriteRule($key))
 					{
-						$this->setOverwriteRule($key, $overwrite);
+						$this->setOverwriteRule($key, FALSE);
 						$this->rowArray[$this->index][$key] = $value;
-					} else
-					{
-						$this->setOverwriteRule($key);
 					}				
 				}
 			}
