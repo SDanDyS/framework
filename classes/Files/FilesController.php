@@ -2,7 +2,9 @@
 	namespace Files;
 	class FilesController
 	{
-		private  $filePath;
+		private $filePath;
+
+		private static $filePermission;
 
 		public static function getUrlBase($path = NULL)
 		{
@@ -77,6 +79,16 @@
 		public static function chmod($path, $mode)
 		{
 			chmod($path, $mode);
+		}
+
+		public static function SETchmod($mode)
+		{
+			$this->filePermission = $mode;
+		}
+
+		public static function GETchmod()
+		{
+			return $this->filePermission;
 		}
 
 

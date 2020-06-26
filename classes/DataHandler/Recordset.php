@@ -22,8 +22,6 @@
 
 		private $rowArray = [];
 
-		private $rowArrayRuler = [];
-
 		private $index = -1;
 
 		private $errorSuppression;
@@ -125,15 +123,13 @@
 						{
 							$value = "{$_POST[$key]}{$_GET[$key]}";
 						}
-						$this->setField($key, $value, 1);
+						$this->setField($key, $value);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
-
-				$this->resetOverwriteRule();
 			}
 		}
 
@@ -153,15 +149,13 @@
 						{
 							$value = "{$_GET[$key]}{$_POST[$key]}";
 						}
-						$this->setField($key, $value, 1);
+						$this->setField($key, $value);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
-
-				$this->resetOverwriteRule();
 			}
 		}
 
@@ -176,15 +170,13 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
-						$this->setField($key, $value, "T");
+						$this->setField($key, $value);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
-
-				$this->resetOverwriteRule();
 			}	
 		}
 
@@ -199,44 +191,14 @@
 				{
 					if ($this->hasField($key))
 					{
-						//IT FAILS BECAUSE PRIMARY KEY IS EMPTY
-						//THIS CREATES NO SECOND ARGUMENT 
-						//THEREFORE IT SETS "T" AS SECOND ARGUMENT AND DEFAULT F AS THIRD ARGUMENT
-						$this->setField($key, $value, "T");
+						$this->setField($key, $value);
 					}
 				}
 
 				$this->setImages();
 
 				$this->executeQuery();
-
-				$this->resetOverwriteRule();
 			}
-		}
-
-		private function setOverwriteRule($key, $overwrite = "T")
-		{
-			if($this->hasField($key, $this->row))
-			{
-				$this->rowArrayRuler[$key] = $overwrite;
-			}
-		}
-
-		private function getOverwriteRule($key)
-		{
-			if (array_key_exists($key, $this->rowArrayRuler))
-			{
-				echo "isset";
-				$this->rowArrayRuler[$key];
-			} else
-			{
-				return "T";
-			}
-		}
-
-		private function resetOverwriteRule()
-		{
-			$this->rowArrayRuler = [];
 		}
 
 		public static function setExtension($allowedExtensions = NULL)
@@ -856,7 +818,7 @@
 			* if the primary key is set, but there is no value given to it, set to 0
 			* this will ensure the query won't fail.
 			*/
-			if ($this->getField($uniqueID) == "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
+			if ($this->getField($uniqueID) === "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
 			{
 				$this->setField($uniqueID, 0);
 			}
@@ -1090,7 +1052,7 @@
 		/*
 		* setField initiates the column you wish to set
 		*/
-		public function setField($key, $value, $overwrite = "F")
+		public function setField($key, $value)
 		{
 			/*
 			* Set index to 0
@@ -1100,34 +1062,9 @@
 			/*
 			* If the column exists
 			*/
-			echo "{$key}:<br/>";
-			echo "{$value}:<br/>";
-			echo $overwrite;
 			if ($this->hasField($key, $this->row))
 			{
-				/*
-				* Check what the state of overwrite is
-				*/
-				if ($overwrite === "T" && $this->getOverwriteRule($key) === "T")
-				{
-					/*
-					* If true, check whether the state was already set and whether this is set to true aswell
-					* if overwrite is set to TRUE, but 
-					* If it's set to true, overwriting is allowed by both TRUE and FALSE
-					*/
-					$this->setOverwriteRule($key, "T");
-					$this->rowArray[$this->index][$key] = $value;
-					exit("im T");
-					
-				} else if ($overwrite === "F")
-				{
-					/*
-					* if overwrite is set to FALSE, check whether level is set to either level lower or the same level
-					*/
-					$this->setOverwriteRule($key, "F");
-					$this->rowArray[$this->index][$key] = $value;
-					exit("im F");
-				}
+				$this->rowArray[$this->index][$key] = $value;
 			}
 		}
 
