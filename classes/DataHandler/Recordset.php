@@ -1,6 +1,7 @@
 <?php
 	namespace DataHandler;
 	use DatabaseConnection\Connection;
+	use \Files;
 	/*
 	*Recordset is the database class, which will do the CRUD for you
 	* DELETE
@@ -614,7 +615,7 @@
 
 							if (array_key_exists($fileExtension, self::$allowedExtensions))
 							{
-								$finfo = new finfo(FILEINFO_MIME_TYPE);
+								$finfo = new \finfo(FILEINFO_MIME_TYPE);
 								$mimeType = in_array($finfo->file($tmpName), self::$allowedExtensions, true);
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
@@ -647,9 +648,15 @@
 
 										$completePath = "{$filePath}/{$name}.{$fileExtension}";
 
-										$this->setField($fileName, $completePath);
+										$pathTrimmer = Files\FilesController::getUrlBase(Files\FilesController::getBaseDir());
+
+										$databasePath = str_replace($pathTrimmer, "", $completePath);
+
+										$this->setField($fileName, $databasePath);
 
 										move_uploaded_file($tmpName, $completePath);
+
+										Files\FilesController::chmod($completePath, Files\FilesController::getFilePermission());
 									}
 								} else
 								{

@@ -4,6 +4,8 @@
 	{
 		private $filePath;
 
+		private static $baseDir;
+
 		private static $filePermission;
 
 		public static function getUrlBase($path = NULL)
@@ -16,6 +18,21 @@
 			}
 
 			return "{$base}/{$path}";
+		}
+
+		public static function setBaseDir($baseDir)
+		{
+			if (!is_dir($baseDir))
+			{
+				exit("The base directory given is not a directory.");
+			}
+
+			self::$baseDir = $baseDir;
+		}
+
+		public static function getBaseDir()
+		{
+			return self::$baseDir;
 		}
 
 		/*
@@ -81,14 +98,14 @@
 			chmod($path, $mode);
 		}
 
-		public static function SETchmod($mode)
+		public static function setFilePermission($mode)
 		{
-			$this->filePermission = $mode;
+			self::$filePermission = $mode;
 		}
 
-		public static function GETchmod()
+		public static function getFilePermission()
 		{
-			return $this->filePermission;
+			return self::$filePermission;
 		}
 
 
