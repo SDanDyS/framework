@@ -35,6 +35,8 @@
 
 		private static $image;
 
+		private static $allowedImageSize;
+
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
 		* the script at any given time.
@@ -588,6 +590,38 @@
 			self::$image = $object;
 		}
 
+		public static function setSize($size, $type)
+		{
+			$space = 
+			[
+				"KB" => 1024,
+				"MB" => 1048576,
+				"GB" => 1073741824,
+				"TB" => 099511627776
+			];
+
+			if (is_null($size))
+			{
+				self::$allowedImageSize = 2 * $space["kb"];
+			} else
+			{
+				$type = strtoupper($type);
+
+				if (array_key_exists($type))
+				{
+					self::$allowedImageSize = $size * $space[$type];	
+				} else
+				{
+					//CREATE CUSTOM RETURN HANDLER
+				}
+			}
+		}
+
+		public static function getSize()
+		{
+			return self::allowedImageSize;
+		}
+
 		private function setImages()
 		{
 			if (count($_FILES) > 0) 
@@ -620,6 +654,11 @@
 
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
+
+								if ($size > self::getSize())
+								{
+									//WORK O NTHIS TOMORROW.
+								}
 
 									$image = self::$image;
 									
