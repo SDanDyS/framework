@@ -2,6 +2,7 @@
 	namespace DataHandler;
 	use DatabaseConnection\Connection;
 	use \Files;
+	use \Exception;
 	/*
 	*Recordset is the database class, which will do the CRUD for you
 	* DELETE
@@ -25,8 +26,6 @@
 
 		private $index = -1;
 
-		private $errorSuppression;
-
 		private $conn;
 
 		private static $allowedExtensions;
@@ -38,17 +37,24 @@
 		private static $allowedImageSize;
 
 		/*
+		* Custom error responses
+		*/
+		private $response;
+
+		private static $scriptError;
+
+		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
 		* the script at any given time.
 		* This way you can also target the correct database table
 		*/
 		private $table;
 
-		public function __construct($query, $table, $errorSuppression = true)
+		public function __construct($query, $table, $scriptError = "JSON")
 		{
 			$this->conn = Connection::setConnection();
 
-			$this->errorSuppression = $errorSuppression;
+			self::$scriptError = $scriptError;
 
 			$this->table = $table;
 
@@ -85,7 +91,7 @@
 					$this->$action();
 				} else
 				{
-					self::suppressionCaller(__METHOD__, $action);
+					$this->getErrorMsg(__METHOD__, $action);
 				}			
 			} else
 			{
@@ -106,7 +112,7 @@
 				$this->$action();
 			} else
 			{
-				self::getSuppressionCaller(__METHOD__, $mixture);
+				$this->getErrorMsg(__METHOD__, $mixture);
 			}
 		}
 
@@ -564,7 +570,7 @@
 						}
 					} else
 					{
-						self::suppressionCaller(__METHOD__, $key);
+						$this->getErrorMsg(__METHOD__, "Given extension is not a valid extension. <br/> Extension given: {$key}");
 					}
 				}			
 			}
@@ -575,7 +581,7 @@
 		{
 			if (!is_bool($distortion))
 			{
-				self::getSuppressionCaller(__METHOD__, $distortion);
+				exit(__METHOD__."<br/> Input was not valid.<br/> Input: {$distortion}");
 			}
 			self::$nameDistortion = $distortion;
 		}
@@ -590,7 +596,7 @@
 			self::$image = $object;
 		}
 
-		public static function setSize($size, $type)
+		public static function setSize($size = NULL, $type = NULL)
 		{
 			$space = 
 			[
@@ -602,24 +608,35 @@
 
 			if (is_null($size))
 			{
-				self::$allowedImageSize = 2 * $space["kb"];
+				self::$allowedImageSize["text"] = "2 MB";
+				self::$allowedImageSize["maximumBytes"] = 2 * $space["MB"];
 			} else
 			{
 				$type = strtoupper($type);
 
 				if (array_key_exists($type))
 				{
-					self::$allowedImageSize = $size * $space[$type];	
+					self::$allowedImageSize["text"] = "{$size} {$type}";
+					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];	
 				} else
 				{
-					//CREATE CUSTOM RETURN HANDLER
+					$this->getErrorMsg(__METHOD__, "The given size type for images is not a valid one. <br/> Input: {$type}");
 				}
 			}
 		}
 
-		public static function getSize()
+		public static function getSize($passBack = NULL)
 		{
-			return self::allowedImageSize;
+			if (is_null($passBack))
+			{
+				return self::allowedImageSize;
+			} else if (array_key_exists($passBack, self::allowedImageSize))
+			{
+				return self::allowedImageSize[$passBack];
+			} else 
+			{
+				exit(__METHOD__."<br/> Developer input: {$passBack} <br/> Key was not found");
+			}
 		}
 
 		private function setImages()
@@ -655,33 +672,38 @@
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
 
-								if ($size > self::getSize())
+								if ($size > self::getSize("maximumBytes"))
 								{
-									//WORK O NTHIS TOMORROW.
+									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is:".self::getSize("text"), TRUE);
 								}
 
 									$image = self::$image;
 									
 									if (empty($image->getParams("path")))
 									{
-										self::getSuppressionCaller(__METHOD__, "File path");
+										$this->getErrorMsg(__METHOD__, "The given path does not exist", TRUE);
 									} else
 									{
 										if(!is_dir($image->getParams("path")))
 										{
-											mkdir($image->getParams("path"), $image->getParams("mode"), $image->getParams("recursive"));
+											$this->getErrorMsg(__METHOD__, "The given path is not a directory", TRUE);
 										}
 
-										if (self::$nameDistortion)
+										switch (self::$nameDistortion) 
 										{
-											$name = uniqid("", true);
-										} else if (!self::$nameDistortion)
-										{
-											$name = $name;
-										} else 
-										{
-											self::errorSuppression(__METHOD__, self::$nameDistortion);
+											case TRUE:
+												$name = uniqid("", true);
+											break;
+
+											case FALSE:
+												$name = $name;
+											break;
+	
+											default:
+												$name = $name;
+											break;
 										}
+
 
 										$filePath = $image->getParams("path");
 
@@ -704,7 +726,7 @@
 							}
 						} else
 						{
-							exit(new UploadException($error));
+							$this->getErrorMsg(__METHOD__, new Exception\UploadException($error));
 						}
 					}
 				}		
@@ -1132,7 +1154,7 @@
 			}
 			else
 			{
-				self::getSuppressionCaller(__METHOD__, $key);
+				return;
 			}
 		}
 
@@ -1148,20 +1170,32 @@
 			}
 			else
 			{
-				self::getSuppressionCaller(__METHOD__, $key);
+				$this->getErrorMsg(__METHOD__, "Row {$key} is not a row and could therefore not be retrieved.");
 			}
 		}
 
-		//MOVE METHOD TO DEDICATED ERROR HANDLING CLASS.
-		private static function getSuppressionCaller($error, $clause)
+		private function getErrorMsg($error, $clause, $exit = FALSE)
 		{
-			if ($this->errorSuppression) 
+			switch (self::$scriptError) 
 			{
-				return;
+				case 'EXIT':
+					exit("{$error} <br/> Error: {$clause}");
+				break;
+
+				case 'JSON':
+					$this->response[] = $clause;
+				break;
+	
+				default:
+					exit("scriptError has not been set.");
+				break;
 			}
-			else
+
+			if ($exit)
 			{
-				exit("{$error} <br/> Developer input: {$clause} <br/> Developer input failed. Check manual for further instructions.");
+				$fatal = json_encode($this->response);
+
+				exit($fatal);
 			}
 		}
 
