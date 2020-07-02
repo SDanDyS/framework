@@ -711,7 +711,7 @@
 
 										$completePath = "{$filePath}/{$name}.{$fileExtension}";
 
-										$pathTrimmer = Files\FilesController::getUrlBase(Files\FilesController::getBaseDir());
+										$pathTrimmer = Files\FilesController::getBaseDir();
 
 										$databasePath = str_replace($pathTrimmer, "", $completePath);
 
