@@ -60,6 +60,8 @@
 
 			$this->setTableColumns();
 
+			self::setSize();
+
 			self::setNameDistortion();
 
 			self::setExtension();
@@ -600,10 +602,10 @@
 		{
 			$space = 
 			[
-				"KB" => 1024,
-				"MB" => 1048576,
-				"GB" => 1073741824,
-				"TB" => 099511627776
+				"KB" => "1024",
+				"MB" => "1048576",
+				"GB" => "1073741824",
+				"TB" => "099511627776"
 			];
 
 			if (is_null($size))
@@ -629,10 +631,10 @@
 		{
 			if (is_null($passBack))
 			{
-				return self::allowedImageSize;
-			} else if (array_key_exists($passBack, self::allowedImageSize))
+				return self::$allowedImageSize;
+			} else if (array_key_exists($passBack, self::$allowedImageSize))
 			{
-				return self::allowedImageSize[$passBack];
+				return self::$allowedImageSize[$passBack];
 			} else 
 			{
 				exit(__METHOD__."<br/> Developer input: {$passBack} <br/> Key was not found");
@@ -674,7 +676,7 @@
 
 								if ($size > self::getSize("maximumBytes"))
 								{
-									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is:".self::getSize("text"), TRUE);
+									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"), TRUE);
 								}
 
 									$image = self::$image;
@@ -721,15 +723,15 @@
 									}
 								} else
 								{
-									self::errorSuppression(__METHOD__, $mimeType);
+									$this->getErrorMsg(__METHOD__, "The set MIME type is not allowed.", TRUE);
 								}								
 							}
 						} else
 						{
-							$this->getErrorMsg(__METHOD__, new Exception\UploadException($error));
+							$this->getErrorMsg(__METHOD__, new Exception\UploadException($error), TRUE);
 						}
 					}
-				}		
+				}
 			}
 		}
 

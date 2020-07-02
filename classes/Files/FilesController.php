@@ -22,6 +22,8 @@
 
 		public static function setBaseDir($baseDir)
 		{
+			$baseDir = self::getUrlBase($baseDir);
+
 			if (!is_dir($baseDir))
 			{
 				exit("The base directory given is not a directory.");
@@ -57,7 +59,7 @@
 				exit(__METHOD__."<br/> Argument <b>recursive</b> is not a boolean.");
 			}
 
-			$this->filePath["path"] = self::getUrlBase(self::getBaseDir().$path);
+			$this->filePath["path"] = self::getBaseDir().$path;
 			$this->filePath["mode"] = $mode;
 			$this->filePath["recursive"] = $recursive;
 			$this->filePath["assigner"] = $assigner;
