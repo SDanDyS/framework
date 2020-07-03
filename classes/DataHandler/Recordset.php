@@ -50,7 +50,7 @@
 		*/
 		private $table;
 
-		public function __construct($query, $table, $scriptError = "JSON")
+		public function __construct($table, $scriptError = "JSON")
 		{
 			$this->conn = Connection::setConnection();
 
@@ -65,11 +65,11 @@
 			self::setNameDistortion();
 
 			self::setExtension();
+		}
 
-			if (!empty($query)) 
-			{
-				$this->executeQuery($query);
-			}
+		public function prepare($query, ...$params)
+		{
+			$this->executeQuery($query, ...$params);
 		}
 
 		/*
@@ -783,9 +783,8 @@
 			return $uniqueID;
 		}
 
-		private function executeQuery($sql = NULL)
+		private function executeQuery($sql = NULL, ...$params)
 		{
-
 			if (!is_null($sql)) 
 			{
 				$haystack = 
@@ -807,8 +806,14 @@
 			 	$update = $haystack["update"];
 			 	$delete = $haystack["delete"];
 
-
 				$completedQuery = $this->conn->prepare($sql);
+
+				if (count($params) > 0)
+				{
+					$typeReference = str_repeat("s", count($params));
+
+					$completedQuery->bind_param($typeReference, ...$params);				
+				}
 
 				/*
 				* There has been a SELECT statement

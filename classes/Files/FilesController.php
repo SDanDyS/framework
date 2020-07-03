@@ -133,7 +133,7 @@
 
 		public function setDirectory($path)
 		{
-			$path = self::getUrlBase($path);
+			$path = self::getBaseDir().$path;
 			
 			if (!is_dir($path))
 			{
@@ -153,19 +153,36 @@
 		//order deny,allow
 		//deny from all
 		//allow from >>>INSERT YOUR ID<<<
+		//https://www.inmotionhosting.com/support/edu/website-design/access-specific-filetype/
 		public function setDirectoryPermission($permission, $overwrite = FALSE)
 		{
 			$file = NULL;
-
-			$permissionFile = $this->getParams("path")."/.htaccess";
 
 			if(!is_bool($overwrite))
 			{
 				exit(__METHOD__."<br/>Parameter <b>overwrite</b> is not a boolean. Please set this to TRUE or FALSE");
 			}
-			if (!is_dir($this->getParams("path")))
+
+			if (empty($this->getParams("path")))
 			{
-				exit("The given path is not a directory. Please set the directory you wish to set a permission for.");
+				if(empty(self::getBaseDir()))
+				{
+					exit(__METHOD__."<br/>No directory could be targetted. <br/>There is no base directory nor a target directory.");
+				} else if (!is_dir(self::getBaseDir()))
+				{
+					exit(__METHOD__."<br/>Base directory could not be found.<br/> Input: " .self::getBaseDir());
+				} else 
+				{
+					$permissionFile = self::getBaseDir()."/.htaccess";
+				}
+			} else
+			{
+				if (!is_dir($this->getParams("path")))
+				{
+					exit("The given path is not a directory. Please set the directory you wish to set a permission for.");
+				}
+
+				$permissionFile = $this->getParams("path")."/.htaccess";
 			}
 
 			if(file_exists($permissionFile))
@@ -205,7 +222,7 @@
 
 		public static function deleteDirectory($path)
 		{
-			$path = self::getUrlBase($path);
+			$path = self::getBaseDir().$path;
 
 			if(is_dir($path))
 			{
@@ -215,7 +232,7 @@
 
 		public static function deleteFile($path)
 		{
-			$path = self::getUrlBase($path);
+			$path = self::getBaseDir().$path;
 
 			if(is_file($path))
 			{
