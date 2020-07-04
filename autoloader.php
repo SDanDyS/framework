@@ -3,9 +3,9 @@
 
 		$class = str_replace("\\", "/", $class);
 
-		if (file_exists(__DIR__."\\framework\\classes\\{$class}.php"))
+		if (file_exists(__DIR__."/framework/classes/{$class}.php"))
 		{
-			require_once __DIR__."\\framework\\classes\\{$class}.php";
+			require_once __DIR__."/framework/classes/{$class}.php";
 		}
 	});
 ?>

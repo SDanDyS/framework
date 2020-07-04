@@ -69,7 +69,7 @@
 
 		public function prepare($query, ...$params)
 		{
-			$this->executeQuery($query, ...$params);
+			$this->executeQuery($query, $params);
 		}
 
 		/*
