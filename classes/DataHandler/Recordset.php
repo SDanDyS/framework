@@ -1165,19 +1165,43 @@
 			}
 		}
 
-		public function getRow($key = NULL)
+		public function getRow($key = NULL, $value = NULL)
 		{
 			if (is_null($key)) 
 			{
 				return $this->rowArray;
 			}
-			else if (array_key_exists($key, $this->rowArray))
+			else if (array_key_exists($key, $this->rowArray) && is_null($value))
 			{
 				return $this->rowArray[$key];
 			}
+			else if (!is_null($value))
+			{
+				$matchedArray = [];
+
+				$this->setIndex();
+
+				foreach ($this->rowArray as $count => $innerArray)
+				{
+					if ($this->rowArray[$count][$key] === $value)
+					{
+						$matchedArray[] = $this->rowArray[$count];
+					}
+				}
+				$this->resetIndex();
+
+				if (count($matchedArray) > 0)
+				{
+					return $matchedArray;
+				}
+				else
+				{
+					$this->getErrorMsg(__METHOD__, "Row {$key} is not a row and could therefore not be retrieved.");
+				}
+			}
 			else
 			{
-				$this->getErrorMsg(__METHOD__, "Row {$key} is not a row and could therefore not be retrieved.");
+				$this->getErrorMsg(__METHOD__, "The column <b>{$key}</b> with the requested value <b>{$value}</b> could not be found in any row");
 			}
 		}
 
