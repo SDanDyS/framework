@@ -212,6 +212,9 @@
 			}
 		}
 
+		/*
+		* Set the allowed extension for FILES
+		*/
 		public static function setExtension($allowedExtensions = NULL)
 		{
 			
@@ -544,6 +547,10 @@
 				]
 			];
 
+			/*
+			* If the developer did not pass an argument along
+			* allow all extensions
+			*/
 			if (is_null($allowedExtensions))
 			{
 				foreach ($extensionsLibrary as $innerArray)
@@ -555,15 +562,25 @@
 				}
 			} else
 			{
+				/*
+				* Developer set an allowed extension
+				* Check whether this was found in library and extract
+				*/
 				$formattedExtensions = str_replace(" ", ",", $allowedExtensions);
 				$formattedExtensions = str_replace(",,", ",", $formattedExtensions);
 				$settedExtensions = explode(",", $formattedExtensions);
 
+				/*
+				* Loop through the given INDEX and unpack
+				*/
 				foreach ($settedExtensions as $key => $extension)
 				{
-
+					
 					$extension = strtoupper($extension);
 
+					/*
+					* Key exists, unpack
+					*/
 					if (array_key_exists($extension, $extensionsLibrary))
 					{
 						foreach ($extensionsLibrary[$extension] as $k => $v)
@@ -579,6 +596,10 @@
 			
 		}
 
+		/*
+		* Change the name of the image for security reasons
+		* Default = TRUE
+		*/
 		public static function setNameDistortion($distortion = TRUE)
 		{
 			if (!is_bool($distortion))
@@ -593,11 +614,19 @@
 			return self::$nameDistortion;
 		}
 
+		/*
+		* Once the image path has been created by the FilesController object, the developer can pass it along to Recordset as target
+		*/
 		public static function setImageObject($object)
 		{
 			self::$image = $object;
 		}
 
+		/*
+		* set the maximum allowed size for FILES
+		* first parameter = size
+		* second parameter = the type
+		*/
 		public static function setSize($size = NULL, $type = NULL)
 		{
 			$space = 
@@ -608,6 +637,10 @@
 				"TB" => "099511627776"
 			];
 
+			/*
+			* Default is 2MB
+			* Set a textual display and a program related amount of bytes to compare to
+			*/
 			if (is_null($size))
 			{
 				self::$allowedImageSize["text"] = "2 MB";
@@ -622,7 +655,7 @@
 					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];	
 				} else
 				{
-					$this->getErrorMsg(__METHOD__, "The given size type for images is not a valid one. <br/> Input: {$type}");
+					exit(__METHOD__, "<br/> The given size type for images is not a valid one. <br/> Input: {$type}");
 				}
 			}
 		}
@@ -663,20 +696,45 @@
 						*/
 						if ($error === UPLOAD_ERR_OK)
 						{
+							/*
+							* Rip the name apart
+							*/
 							$dissolvedFileName = explode(".", $name);
+
+							/*
+							* take the extension and turn in into lowercase
+							*/
 							$fileExtension = strtolower(end($dissolvedFileName));
 
+							/*
+							* Check whether file extension is allowed
+							*/
 							if (array_key_exists($fileExtension, self::$allowedExtensions))
 							{
+								/*
+								* Check the MIMETYPE
+								*/
 								$finfo = new \finfo(FILEINFO_MIME_TYPE);
+
+								/*
+								* Check whether the MIMETYPE is in the array as a VALUE
+								* Return value = boolean
+								*/
 								$mimeType = in_array($finfo->file($tmpName), self::$allowedExtensions, true);
 
+								/*
+								* if MIMETYPE equals TRUE, the MIMETYPE is allowed
+								* Check whether the given FILE extension corresponds with the MIMETYPE
+								*/
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
 
+								/*
+								* Check whether FILE SIZE is bigger then the maximum amount of allowed bytes
+								*/
 								if ($size > self::getSize("maximumBytes"))
 								{
-									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"), TRUE);
+									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"));
 								}
 
 									$image = self::$image;
