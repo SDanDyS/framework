@@ -68,7 +68,7 @@
 		}
 
 
-		public function createDirectory($path, $mode = 0777, $recursive = FALSE)
+		public function createDir($path, $mode = 0777, $recursive = FALSE)
 		{
 			$this->setParams($path, $mode, $recursive, "DIR");
 		}
@@ -131,7 +131,7 @@
 		}
 
 
-		public function setDirectory($path)
+		public function setDir($path)
 		{
 			$path = self::getBaseDir().$path;
 			
@@ -220,7 +220,7 @@
 		}
 
 
-		public static function deleteDirectory($path)
+		public static function deleteDir($path)
 		{
 			$path = self::getBaseDir().$path;
 

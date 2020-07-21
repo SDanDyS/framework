@@ -75,7 +75,7 @@
 		/*
 		* call save() to start the CRUD process
 		*/
-		public function save($mixture = NULL)
+		public function save()
 		{
 			/*
 			* Check in what way the request was send
@@ -86,89 +86,10 @@
 			*/
 			$action = "saveBy{$_SERVER['REQUEST_METHOD']}";
 
-			if (is_null($mixture))
-			{
-				if (method_exists($this, $action))
-				{
-					$this->$action();
-				} else
-				{
-					$this->getErrorMsg(__METHOD__, $action);
-				}			
-			} else
-			{
-				$this->getMixedMETHOD($mixture);
-			}
+			$this->$action();
+				
 		}
 
-		private function getMixedMETHOD($mixture)
-		{
-			$fetchMethods = ["POST/GET" => "saveByPOSTMixture", "GET/POST" => "saveByGETMixture", "POST" => "saveByPOST", "GET" => "saveByGET"];
-
-			$request = $mixture;
-
-			if(array_key_exists($request, $fetchMethods))
-			{
-				$action = $fetchMethods[$request];
-
-				$this->$action();
-			} else
-			{
-				$this->getErrorMsg(__METHOD__, $mixture);
-			}
-		}
-
-		private function saveByPOSTMixture()
-		{
-			/*
-			* Combination between GET and POST
-			* In which the $_POST method is the leading method
-			*/
-			if (count($_POST) > 0) 
-			{
-				foreach ($_POST as $key => $value) 
-				{
-					if ($this->hasField($key, $this->row))
-					{
-						if (isset($_GET[$key]))
-						{
-							$value = "{$_POST[$key]}{$_GET[$key]}";
-						}
-						$this->setField($key, $value);
-					}
-				}
-
-				$this->setImages();
-
-				$this->executeQuery();
-			}
-		}
-
-		private function saveByGETMixture()
-		{
-			/*
-			* Combination between GET and POST
-			* In which the $_GET method is the leading method
-			*/
-			if (count($_GET) > 0)
-			{
-				foreach ($_GET as $key => $value) 
-				{
-					if ($this->hasField($key, $this->row))
-					{
-						if (isset($_POST[$key]))
-						{
-							$value = "{$_GET[$key]}{$_POST[$key]}";
-						}
-						$this->setField($key, $value);
-					}
-				}
-
-				$this->setImages();
-
-				$this->executeQuery();
-			}
-		}
 
 		/*
 		* if $_POST is not empty, start looping through it to assign keys and values to write to database
@@ -181,7 +102,20 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
-						$this->setField($key, $value);
+						if (is_array($_POST[$key]))
+						{
+							foreach ($_POST[$key] as $v)
+							{
+								$this->setField($key, $v);
+
+								$this->next();
+							}
+
+							$this->resetIndex();
+						} else 
+						{
+							$this->setField($key, $value);
+						}
 					}
 				}
 
@@ -200,9 +134,22 @@
 			{
 				foreach ($_GET as $key => $value)
 				{
-					if ($this->hasField($key))
+					if ($this->hasField($key, $this->row))
 					{
-						$this->setField($key, $value);
+						if (is_array($_GET[$key]))
+						{
+							foreach ($_GET[$key] as $v)
+							{
+								$this->setField($key, $v);
+
+								$this->next();
+							}
+
+							$this->resetIndex();
+						} else 
+						{
+							$this->setField($key, $value);
+						}
 					}
 				}
 
@@ -1334,7 +1281,7 @@
 		{
 			if ($this->index > -1) 
 			{
-				$this->index = $this->index = -1;
+				$this->index = -1;
 
 				return $this->index;
 			}
