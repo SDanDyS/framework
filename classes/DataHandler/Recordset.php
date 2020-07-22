@@ -602,7 +602,7 @@
 					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];	
 				} else
 				{
-					exit(__METHOD__, "<br/> The given size type for images is not a valid one. <br/> Input: {$type}");
+					exit(__METHOD__. "<br/> The given size type for images is not a valid one. <br/> Input: {$type}");
 				}
 			}
 		}
@@ -788,7 +788,7 @@
 			return $uniqueID;
 		}
 
-		private function executeQuery($sql = NULL, ...$params)
+		private function executeQuery($sql = NULL, $params = NULL)
 		{
 			if (!is_null($sql)) 
 			{
@@ -847,6 +847,7 @@
 						{
 							foreach ($row as $key => $columnName) 
 							{
+								//CHANGE TO SETFIELD, TO KEEP CONSISTENCY
 								$this->rowArray[$this->index][$key] = $row[$key];
 							}
 
@@ -932,109 +933,123 @@
 
 		private function insertQuery()
 		{
-			/*
-			* Instantiate variables
-			*/
-			$createQuery = NULL;
-			$placeholders = NULL;
-			$bindPARAM = NULL;
-			$completeSet = NULL;
-			$counter = 0;
 
-			/*
-			* Array to push values which will be bound later on
-			* This way SQL injection is prevented
-			*/
-			$args = [];
-
-			$createQuery = "INSERT INTO `{$this->table}` (";
-
-			/*
-			* Set index count to 0
-			*/
-			$this->setIndex();
-
-			/*
-			* Start looping through the required elements and create a query string
-			*/
-			foreach($this->rowArray[$this->index] as $key => $value)
+			foreach ($this->rowArray as $indexCount => $arrayCollection)
 			{
+				//do query stuff
+
 				/*
-				* If the primary key equals the key in the loop
-				* If yes, return the loop and go on with the next key
+				* Instantiate variables
 				*/
-				if ($this->getPrimaryKey() == $key)
+				$createQuery = NULL;
+				$placeholders = NULL;
+				$bindPARAM = NULL;
+				$completeSet = NULL;
+				$counter = 0;
+
+				/*
+				* Array to push values which will be bound later on
+				* This way SQL injection is prevented
+				*/
+				$args = [];
+
+				$createQuery = "INSERT INTO `{$this->table}` (";
+
+				/*
+				* Set index count to 0
+				*/
+				$this->setIndex();
+
+				/*
+				* Start looping through the required elements and create a query string
+				*/
+				foreach($this->rowArray[$indexCount] as $key => $value)
 				{
+					/*
+					* If the primary key equals the key in the loop
+					* If yes, return the loop and go on with the next key
+					*/
+					if ($this->getPrimaryKey() == $key)
+					{
+						$counter++;
+						continue;
+					}
+					/*
+					* If the required field is empty, set to NULL
+					*/
+					if ($value === "")
+					{
+						if ($this->rowArray[$indexCount] - 1 !== -1)
+						{
+							$this->rowArray[$indexCount][$key] = $this->rowArray[$indexCount - 1][$key];
+						} else
+						{
+							$this->rowArray[$indexCount][$key] = NULL;
+						}
+						//$this->setField($key, NULL);
+					}
+
+					/*
+					* Check whether the end of the loop has been reached
+					* Yes, start closing the query string
+					* No, keep the query string open
+					*/
+					if ($counter === count($this->rowArray[$indexCount]) - 1) 
+					{
+						$placeholders .= "?)";
+						$createQuery .= "{$key}";
+					} else
+					{
+						$placeholders .= "?,";
+						$createQuery .= "{$key},";
+					}
+
+					/*
+					* Types for bind_param();
+					*/
+					$bindPARAM .= "s";
+
+					/*
+					* Values / References pushed
+					*/
+					$args[] = $value;
+
 					$counter++;
-					continue;
 				}
-				/*
-				* If the required field is empty, set to NULL
-				*/
-				if ($value === "")
-				{
-					$this->setField($key, NULL);
-				}
-
-				/*
-				* Check whether the end of the loop has been reached
-				* Yes, start closing the query string
-				* No, keep the query string open
-				*/
-				if ($counter === count($this->rowArray[$this->index]) - 1) 
-				{
-					$placeholders .= "?)";
-					$createQuery .= "{$key}";
-				} else
-				{
-					$placeholders .= "?,";
-					$createQuery .= "{$key},";
-				}
-
-				/*
-				* Types for bind_param();
-				*/
-				$bindPARAM .= "s";
-
-				/*
-				* Values / References pushed
-				*/
-				$args[] = $value;
-
-				$counter++;
-			}
 			
-			$createQuery .= ") VALUES (";
+				$createQuery .= ") VALUES (";
 
-			/*
-			* Create the complete query string
-			*/
-			$completeSet = "{$createQuery}{$placeholders}";
+				/*
+				* Create the complete query string
+				*/
+				$completeSet = "{$createQuery}{$placeholders}";
 
-			/*
-			* Create the query object
-			*/
-			$stmt = $this->conn->prepare($completeSet);
+				/*
+				* Create the query object
+				*/
+				$stmt = $this->conn->prepare($completeSet);
 
-			/*
-			* Bind the argument array and unpack it
-			*/
-			$stmt->bind_param($bindPARAM, ...$args);
+				/*
+				* Bind the argument array and unpack it
+				*/
+				$stmt->bind_param($bindPARAM, ...$args);
 
-			/*
-			* Execute the created SQL object
-			*/
-			$stmt->execute();
+				/*
+				* Execute the created SQL object
+				*/
+				$stmt->execute();
 
-			/*
-			* Return inserted key and assign it to its respective field
-			*/
-			$this->setField($this->getPrimaryKey(), $stmt->insert_id);
+				/*
+				* Return inserted key and assign it to its respective field
+				*/
+				$this->setField($this->getPrimaryKey(), $stmt->insert_id);
 
-			/*
-			* Reset $this->index, so during fetch time $this->index starts at 0.
-			*/
-			$this->resetIndex();
+				/*
+				* Reset $this->index, so during fetch time $this->index starts at 0.
+				*/
+				$this->resetIndex();
+				//do stuff halt
+			}
 		}
 
 		private function updateQuery()
