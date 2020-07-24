@@ -17,14 +17,8 @@
 		{
 			$databaseConnection = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
 
-			if ($databaseConnection->connect_error) 
-			{
-				exit("Script exit. Database error: {$databaseConnection->connect_error}");
-			}
-			else 
-			{
-				self::$server[$server] = $databaseConnection;
-			}
+			self::$server[$server] = $databaseConnection;
+
 			self::setRemoteHost();
 		}
 
@@ -32,7 +26,16 @@
 		{
 			if (array_key_exists($key, self::$server)) 
 			{
-				return self::$server[$key];
+				$databaseConnection = self::$server[$key];
+
+				if ($databaseConnection->connect_error) 
+				{
+					exit("Script exit. Database error: {$databaseConnection->connect_error}");
+				}
+				else 
+				{
+					return self::$server[$server] = $databaseConnection;
+				}
 			}
 			else 
 			{

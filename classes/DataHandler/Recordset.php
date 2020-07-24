@@ -736,7 +736,9 @@
 							$this->getErrorMsg(__METHOD__, new Exception\UploadException($error), TRUE);
 						}
 					}
+					$this->next();
 				}
+				$this->resetIndex();
 			}
 		}
 
@@ -936,6 +938,7 @@
 
 			foreach ($this->rowArray as $indexCount => $arrayCollection)
 			{
+				echo $indexCount."<br/>";
 				//do query stuff
 
 				/*
@@ -977,16 +980,29 @@
 					/*
 					* If the required field is empty, set to NULL
 					*/
-					if ($value === "")
+					if ($value === "" || is_null($value))
 					{
-						if ($this->rowArray[$indexCount] - 1 !== -1)
+						$this->rowArray[$indexCount][$key] = NULL;
+					} else if ($indexCount !== count($this->rowArray) - 1)
+					{
+						/*
+						* Check whether key exists. If not, set it
+						* If it is set, do not change it
+						*/
+						if (!isset($this->rowArray[$indexCount + 1][$key]))
+						{
+							$this->rowArray[$indexCount + 1][$key] = $this->rowArray[$indexCount][$key];
+						}
+					} else if ($indexCount === count($this->rowArray) - 1)
+					{
+						/*
+						* Check whether key exists. If not, set it
+						* If it is set, do not change it
+						*/
+						if (!isset($this->rowArray[$indexCount][$key]))
 						{
 							$this->rowArray[$indexCount][$key] = $this->rowArray[$indexCount - 1][$key];
-						} else
-						{
-							$this->rowArray[$indexCount][$key] = NULL;
-						}
-						//$this->setField($key, NULL);
+						}					
 					}
 
 					/*
@@ -1012,7 +1028,7 @@
 					/*
 					* Values / References pushed
 					*/
-					$args[] = $value;
+					$args[] = $this->rowArray[$indexCount][$key];
 
 					$counter++;
 				}
