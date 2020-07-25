@@ -893,43 +893,49 @@
 
 		private function selectQuery()
 		{
-			$requiredRow = NULL;
+			foreach ($this->rowArray as $indexCount => $row)
+			{
+			//THIS FOREACH LOOP SHOULD BE MADE LIKE THE FOLLOWING
+			// DATA IS SET, IT COMES HERE
+			//LOOP AND BASED ON INDEXCOUNT IT RETRIEVES THE KEY WITH THE VALUE
+			//IT THEN CHECKS WHETHER ITS POSSIBLE TO RETRIEVE THAT KEY WITH A SELECT AND BASED ON BIGGER OR LESS THEN 0 IT SHOULD GO INTO UPDATE OR INSERT
+			// COME BACK HERE AND START SECOND LOOP. CHECK AGAIN WHETHER IT ALREADY EXISTS WITH THAT PRIMARY KEY AND DO THE ABOVE
+				$uniqueID = $this->getPrimaryKey();
+
+				/*
+				* if the primary key is set, but there is no value given to it, set to 0
+				* this will ensure the query won't fail.
+				*/
+				if ($this->getField($uniqueID) === "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
+				{
+					$this->setField($uniqueID, 0);
+				}
 			
-			$uniqueID = $this->getPrimaryKey();
+				$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
 
-			/*
-			* if the primary key is set, but there is no value given to it, set to 0
-			* this will ensure the query won't fail.
-			*/
-			if ($this->getField($uniqueID) === "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
-			{
-				$this->setField($uniqueID, 0);
-			}
-			
-			$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
+				$selectQuery = $this->conn->prepare($sql);
 
-			$selectQuery = $this->conn->prepare($sql);
+				/*
+				* Set all the type arguments to string
+				* This is done, because type jugling at the time of writing could not be done by the developer
+				*/
+				$selectQuery->bind_param("s", $uniqueSelector);
 
-			/*
-			* Set all the type arguments to string
-			* This is done, because type jugling at the time of writing could not be done by the developer
-			*/
-			$selectQuery->bind_param("s", $uniqueSelector);
+				$uniqueSelector = $this->getField($uniqueID);
 
-			$uniqueSelector = $this->getField($uniqueID);
+				$selectQuery->execute();
 
-			$selectQuery->execute();
+				$result = $selectQuery->get_result();
 
-			$result = $selectQuery->get_result();
+				$num_of_rows = $result->num_rows;
 
-			$num_of_rows = $result->num_rows;
-
-			if ($num_of_rows > 0) 
-			{
-				$this->updateQuery();
-			} else
-			{
-				$this->insertQuery();
+				if ($num_of_rows > 0) 
+				{
+					$this->updateQuery();
+				} else
+				{
+					$this->insertQuery();
+				}			
 			}
 		}
 
@@ -938,7 +944,6 @@
 
 			foreach ($this->rowArray as $indexCount => $arrayCollection)
 			{
-				echo $indexCount."<br/>";
 				//do query stuff
 
 				/*
