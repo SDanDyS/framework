@@ -109,6 +109,8 @@
 								$this->setField($key, $v);
 
 								$this->next();
+
+								$this->setTableColumns();
 							}
 
 							$this->resetIndex();
@@ -143,6 +145,8 @@
 								$this->setField($key, $v);
 
 								$this->next();
+
+								$this->setTableColumns();
 							}
 
 							$this->resetIndex();
@@ -744,31 +748,40 @@
 
 		private function setTableColumns()
 		{
-			/*
-			* Retrieve the column names and types when method executeQuery is fired
-			*/
-			$columnRetriever = $this->conn->prepare("SHOW COLUMNS FROM `{$this->table}`");
-
-			$columnRetriever->execute();
-
-			/*
-			* Store the fetched result
-			*/
-			$result = $columnRetriever->get_result();
-			
-			/*
-			* Store the retrieved information of the columns
-			*/
-			while ($row = $result->fetch_assoc()) 
+			if (!empty($this->row))
 			{
-				$this->row[$row["Field"]]["Field"] = $row["Field"];
-				$this->row[$row["Field"]]["Type"] = $row["Type"];
-				$this->row[$row["Field"]]["Null"] = $row["Null"];
-				$this->row[$row["Field"]]["Key"] = $row["Key"];
-				$this->row[$row["Field"]]["Default"] = $row["Default"];
-				$this->row[$row["Field"]]["Extra"] = $row["Extra"];
+				foreach ($this->row as $key => $innerArray)
+				{
+					$this->setField($key, "");
+				}				
+			} else 
+			{
+				/*
+				* Retrieve the column names and types when method executeQuery is fired
+				*/
+				$columnRetriever = $this->conn->prepare("SHOW COLUMNS FROM `{$this->table}`");
 
-				$this->setField($row["Field"], "");
+				$columnRetriever->execute();
+
+				/*
+				* Store the fetched result
+				*/
+				$result = $columnRetriever->get_result();
+			
+				/*
+				* Store the retrieved information of the columns
+				*/
+				while ($row = $result->fetch_assoc()) 
+				{
+					$this->row[$row["Field"]]["Field"] = $row["Field"];
+					$this->row[$row["Field"]]["Type"] = $row["Type"];
+					$this->row[$row["Field"]]["Null"] = $row["Null"];
+					$this->row[$row["Field"]]["Key"] = $row["Key"];
+					$this->row[$row["Field"]]["Default"] = $row["Default"];
+					$this->row[$row["Field"]]["Extra"] = $row["Extra"];
+
+					$this->setField($row["Field"], "");
+				}			
 			}
 		}
 
@@ -901,12 +914,14 @@
 			//IT THEN CHECKS WHETHER ITS POSSIBLE TO RETRIEVE THAT KEY WITH A SELECT AND BASED ON BIGGER OR LESS THEN 0 IT SHOULD GO INTO UPDATE OR INSERT
 			// COME BACK HERE AND START SECOND LOOP. CHECK AGAIN WHETHER IT ALREADY EXISTS WITH THAT PRIMARY KEY AND DO THE ABOVE
 				$uniqueID = $this->getPrimaryKey();
+				echo $indexCount."<br/>";
+				$this->index = $indexCount;
 
 				/*
 				* if the primary key is set, but there is no value given to it, set to 0
 				* this will ensure the query won't fail.
 				*/
-				if ($this->getField($uniqueID) === "" || is_null($this->getField($uniqueID)) || $this->getField($uniqueID) === "undefined")
+				if ($this->getField($uniqueID) === "" || is_null($this->getField($uniqueID)))
 				{
 					$this->setField($uniqueID, 0);
 				}
@@ -942,8 +957,8 @@
 		private function insertQuery()
 		{
 
-			foreach ($this->rowArray as $indexCount => $arrayCollection)
-			{
+			//foreach ($this->rowArray as $indexCount => $arrayCollection)
+			//{
 				//do query stuff
 
 				/*
@@ -971,7 +986,7 @@
 				/*
 				* Start looping through the required elements and create a query string
 				*/
-				foreach($this->rowArray[$indexCount] as $key => $value)
+				foreach($this->rowArray[$this->index] as $key => $value)
 				{
 					/*
 					* If the primary key equals the key in the loop
@@ -979,34 +994,39 @@
 					*/
 					if ($this->getPrimaryKey() == $key)
 					{
+						echo "maffa<br/>";
 						$counter++;
 						continue;
 					}
+
+					echo "<br/><br/>";
+						echo "{$k} : {$v}";
+					echo "<br/><br/>";
 					/*
 					* If the required field is empty, set to NULL
 					*/
 					if ($value === "" || is_null($value))
 					{
-						$this->rowArray[$indexCount][$key] = NULL;
-					} else if ($indexCount !== count($this->rowArray) - 1)
+						$this->rowArray[$this->index][$key] = NULL;
+					} else if ($this->index !== count($this->rowArray) - 1)
 					{
 						/*
 						* Check whether key exists. If not, set it
 						* If it is set, do not change it
 						*/
-						if (!isset($this->rowArray[$indexCount + 1][$key]))
+						if (!isset($this->rowArray[$this->index + 1][$key]))
 						{
-							$this->rowArray[$indexCount + 1][$key] = $this->rowArray[$indexCount][$key];
+							$this->rowArray[$this->index + 1][$key] = $this->rowArray[$this->index][$key];
 						}
-					} else if ($indexCount === count($this->rowArray) - 1)
+					} else if ($this->index === count($this->rowArray) - 1)
 					{
 						/*
 						* Check whether key exists. If not, set it
 						* If it is set, do not change it
 						*/
-						if (!isset($this->rowArray[$indexCount][$key]))
+						if (!isset($this->rowArray[$this->index][$key]))
 						{
-							$this->rowArray[$indexCount][$key] = $this->rowArray[$indexCount - 1][$key];
+							$this->rowArray[$this->index][$key] = $this->rowArray[$this->index - 1][$key];
 						}					
 					}
 
@@ -1015,7 +1035,7 @@
 					* Yes, start closing the query string
 					* No, keep the query string open
 					*/
-					if ($counter === count($this->rowArray[$indexCount]) - 1) 
+					if ($counter === count($this->rowArray[$this->index]) - 1) 
 					{
 						$placeholders .= "?)";
 						$createQuery .= "{$key}";
@@ -1033,9 +1053,10 @@
 					/*
 					* Values / References pushed
 					*/
-					$args[] = $this->rowArray[$indexCount][$key];
+					$args[] = $this->rowArray[$this->index][$key];
 
 					$counter++;
+					echo $counter."<br/>";
 				}
 			
 				$createQuery .= ") VALUES (";
@@ -1049,7 +1070,7 @@
 				* Create the query object
 				*/
 				$stmt = $this->conn->prepare($completeSet);
-
+				echo $completeSet;
 				/*
 				* Bind the argument array and unpack it
 				*/
@@ -1070,7 +1091,7 @@
 				*/
 				$this->resetIndex();
 				//do stuff halt
-			}
+			//}
 		}
 
 		private function updateQuery()
@@ -1119,7 +1140,7 @@
 				/*
 				* Values / References pushed
 				*/
-				$args[] = $value;
+				$args[] = $this->rowArray[$this->index][$key];
 
 				/*
 				* Check whether the end of the loop has been reached
@@ -1196,7 +1217,11 @@
 			* else return nothing (silence).
 			* returning empty will prevent PHP from throwing an error.
 			*/
-			if ($this->hasField($key, $this->row)) 
+			if ($this->hasField($key, $this->row) && !isset($this->rowArray[$this->index][$key])) 
+			{
+				$this->rowArray[$this->index][$key] = "";
+				return $this->rowArray[$this->index][$key];
+			} else if ($this->hasField($key, $this->row) && isset($this->rowArray[$this->index][$key]))
 			{
 				return $this->rowArray[$this->index][$key];
 			}
