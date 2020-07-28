@@ -98,28 +98,34 @@
 		{
 			if (count($_POST) > 0) 
 			{
+				echo count($this->rowArray)." first total count<br/>";
 				foreach ($_POST as $key => $value) 
 				{
+				echo count($this->rowArray)." second total count<br/>";
 					if ($this->hasField($key, $this->row))
 					{
 						if (is_array($_POST[$key]))
 						{
-							foreach ($_POST[$key] as $v)
+							foreach ($_POST[$key] as $k => $v)
 							{
 								$this->setField($key, $v);
 
-								$this->next();
-
-								$this->setTableColumns();
+								if ($k !== array_key_last($_POST[$key]))
+								{
+									$this->next();
+									$this->setTableColumns();
+								}
 							}
 
 							$this->resetIndex();
-						} else 
+						} else
 						{
 							$this->setField($key, $value);
 						}
 					}
 				}
+				echo $this->index." remainder count<br/>";
+				echo count($this->rowArray)." total count<br/>";
 
 				$this->setImages();
 
@@ -140,17 +146,19 @@
 					{
 						if (is_array($_GET[$key]))
 						{
-							foreach ($_GET[$key] as $v)
+							foreach ($_GET[$key] as $k => $v)
 							{
 								$this->setField($key, $v);
 
-								$this->next();
-
-								$this->setTableColumns();
+								if ($k !== array_key_last($_GET[$key]))
+								{
+									$this->next();
+									$this->setTableColumns();
+								}
 							}
 
 							$this->resetIndex();
-						} else 
+						} else
 						{
 							$this->setField($key, $value);
 						}
@@ -741,6 +749,8 @@
 						}
 					}
 					$this->next();
+
+					$this->setTableColumns();
 				}
 				$this->resetIndex();
 			}
@@ -914,7 +924,7 @@
 			//IT THEN CHECKS WHETHER ITS POSSIBLE TO RETRIEVE THAT KEY WITH A SELECT AND BASED ON BIGGER OR LESS THEN 0 IT SHOULD GO INTO UPDATE OR INSERT
 			// COME BACK HERE AND START SECOND LOOP. CHECK AGAIN WHETHER IT ALREADY EXISTS WITH THAT PRIMARY KEY AND DO THE ABOVE
 				$uniqueID = $this->getPrimaryKey();
-				echo $indexCount."<br/>";
+				echo count($this->rowArray)."<br/>";
 				$this->index = $indexCount;
 
 				/*
@@ -994,13 +1004,12 @@
 					*/
 					if ($this->getPrimaryKey() == $key)
 					{
-						echo "maffa<br/>";
 						$counter++;
 						continue;
 					}
 
 					echo "<br/><br/>";
-						echo "{$k} : {$v}";
+						echo "{$key} : {$value}";
 					echo "<br/><br/>";
 					/*
 					* If the required field is empty, set to NULL
@@ -1056,7 +1065,6 @@
 					$args[] = $this->rowArray[$this->index][$key];
 
 					$counter++;
-					echo $counter."<br/>";
 				}
 			
 				$createQuery .= ") VALUES (";
@@ -1070,7 +1078,7 @@
 				* Create the query object
 				*/
 				$stmt = $this->conn->prepare($completeSet);
-				echo $completeSet;
+				echo $completeSet."<br/>";
 				/*
 				* Bind the argument array and unpack it
 				*/
@@ -1211,7 +1219,6 @@
 		public function getField($key)
 		{
 			$this->setIndex();
-			// return $this->row;
 			/*
 			* if key exists, return the requested key
 			* else return nothing (silence).
@@ -1328,7 +1335,7 @@
 			return $this->index;
 		}
 
-		private function setIndex()
+		public function setIndex()
 		{
 			if ($this->index === -1) 
 			{
@@ -1338,7 +1345,7 @@
 			}
 		}
 
-		private function resetIndex()
+		public function resetIndex()
 		{
 			if ($this->index > -1) 
 			{
