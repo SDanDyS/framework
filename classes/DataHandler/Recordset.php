@@ -98,10 +98,8 @@
 		{
 			if (count($_POST) > 0) 
 			{
-				echo count($this->rowArray)." first total count<br/>";
 				foreach ($_POST as $key => $value) 
 				{
-				echo count($this->rowArray)." second total count<br/>";
 					if ($this->hasField($key, $this->row))
 					{
 						if (is_array($_POST[$key]))
@@ -109,6 +107,7 @@
 							foreach ($_POST[$key] as $k => $v)
 							{
 								$this->setField($key, $v);
+								echo "{$this->index} saveByPOST <br/>";
 
 								if ($k !== array_key_last($_POST[$key]))
 								{
@@ -116,17 +115,19 @@
 									$this->setTableColumns();
 								}
 							}
-
-							$this->resetIndex();
+							echo $this->getField($key).$this->rowArray[$this->index][$key]." saveByPOST counters<br/>";
+							$this->index = 0;
 						} else
 						{
 							$this->setField($key, $value);
 						}
 					}
 				}
-				echo $this->index." remainder count<br/>";
-				echo count($this->rowArray)." total count<br/>";
-
+				echo $this->getField("testVAR")." saveByPOST outside loop<br/>";
+				$this->next();
+				echo $this->getField("testVAR")." saveByPOST outside loop<br/>";
+				$this->resetIndex();
+				//CHECK SETIMAGES TOMORROW. SOMETHING IN THERE IS FUCKING WITH THE INDEX
 				$this->setImages();
 
 				$this->executeQuery();
@@ -924,8 +925,8 @@
 			//IT THEN CHECKS WHETHER ITS POSSIBLE TO RETRIEVE THAT KEY WITH A SELECT AND BASED ON BIGGER OR LESS THEN 0 IT SHOULD GO INTO UPDATE OR INSERT
 			// COME BACK HERE AND START SECOND LOOP. CHECK AGAIN WHETHER IT ALREADY EXISTS WITH THAT PRIMARY KEY AND DO THE ABOVE
 				$uniqueID = $this->getPrimaryKey();
-				echo count($this->rowArray)."<br/>";
 				$this->index = $indexCount;
+				echo "{$this->index} selectQUERY<br/>";
 
 				/*
 				* if the primary key is set, but there is no value given to it, set to 0
@@ -998,6 +999,8 @@
 				*/
 				foreach($this->rowArray[$this->index] as $key => $value)
 				{
+					echo "{$this->index} INSERT <br/>";
+					echo $this->getField($key)."<br/>";
 					/*
 					* If the primary key equals the key in the loop
 					* If yes, return the loop and go on with the next key
@@ -1008,15 +1011,16 @@
 						continue;
 					}
 
-					echo "<br/><br/>";
-						echo "{$key} : {$value}";
-					echo "<br/><br/>";
+					//echo "<br/><br/>";
+						//echo "{$key} : {$value}";
+					//echo "<br/><br/>";
 					/*
 					* If the required field is empty, set to NULL
 					*/
 					if ($value === "" || is_null($value))
 					{
-						$this->rowArray[$this->index][$key] = NULL;
+						$this->rowArray[$this->index][$key] = "TEST<br/>";
+						echo $this->rowArray[$this->index][$key];
 					} else if ($this->index !== count($this->rowArray) - 1)
 					{
 						/*
@@ -1078,7 +1082,7 @@
 				* Create the query object
 				*/
 				$stmt = $this->conn->prepare($completeSet);
-				echo $completeSet."<br/>";
+				//echo $completeSet."<br/>";
 				/*
 				* Bind the argument array and unpack it
 				*/
