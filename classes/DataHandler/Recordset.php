@@ -761,10 +761,13 @@
 		{
 			if (!empty($this->row))
 			{
-				foreach ($this->row as $key => $innerArray)
+				if ($this->getIndex() > array_key_last($this->rowArray))
 				{
-					$this->setField($key, "");
-				}				
+					foreach ($this->row as $key => $innerArray)
+					{
+						$this->setField($key, "");
+					}					
+				}			
 			} else 
 			{
 				/*
@@ -873,14 +876,15 @@
 						{
 							foreach ($row as $key => $columnName) 
 							{
-								//CHANGE TO SETFIELD, TO KEEP CONSISTENCY
-								$this->rowArray[$this->index][$key] = $row[$key];
+								$this->setField($key, $row[$key]);
 							}
 
 							/*
 							* increment $this->index with 1.
 							*/
 							$this->next();
+
+							$this->setTableColumns();
 						}
 
 						/*
@@ -967,143 +971,110 @@
 
 		private function insertQuery()
 		{
+			/*
+			* Instantiate variables
+			*/
+			$createQuery = NULL;
+			$placeholders = NULL;
+			$bindPARAM = NULL;
+			$completeSet = NULL;
+			$counter = 0;
 
-			//foreach ($this->rowArray as $indexCount => $arrayCollection)
-			//{
-				//do query stuff
+			/*
+			* Array to push values which will be bound later on
+			* This way SQL injection is prevented
+			*/
+			$args = [];
 
+			$createQuery = "INSERT INTO `{$this->table}` (";
+
+			/*
+			* Set index count to 0
+			*/
+			$this->setIndex();
+
+			/*
+			* Start looping through the required elements and create a query string
+			*/
+			foreach($this->rowArray[$this->index] as $key => $value)
+			{
 				/*
-				* Instantiate variables
+				* If the primary key equals the key in the loop
+				* If yes, return the loop and go on with the next key
 				*/
-				$createQuery = NULL;
-				$placeholders = NULL;
-				$bindPARAM = NULL;
-				$completeSet = NULL;
-				$counter = 0;
-
-				/*
-				* Array to push values which will be bound later on
-				* This way SQL injection is prevented
-				*/
-				$args = [];
-
-				$createQuery = "INSERT INTO `{$this->table}` (";
-
-				/*
-				* Set index count to 0
-				*/
-				$this->setIndex();
-
-				/*
-				* Start looping through the required elements and create a query string
-				*/
-				foreach($this->rowArray[$this->index] as $key => $value)
+				if ($this->getPrimaryKey() == $key)
 				{
-					echo "{$this->index} INSERT <br/>";
-					echo $this->getField($key)."<br/>";
-					/*
-					* If the primary key equals the key in the loop
-					* If yes, return the loop and go on with the next key
-					*/
-					if ($this->getPrimaryKey() == $key)
-					{
-						$counter++;
-						continue;
-					}
-
-					//echo "<br/><br/>";
-						//echo "{$key} : {$value}";
-					//echo "<br/><br/>";
-					/*
-					* If the required field is empty, set to NULL
-					*/
-					if ($value === "" || is_null($value))
-					{
-						$this->rowArray[$this->index][$key] = "TEST<br/>";
-						echo $this->rowArray[$this->index][$key];
-					} else if ($this->index !== count($this->rowArray) - 1)
-					{
-						/*
-						* Check whether key exists. If not, set it
-						* If it is set, do not change it
-						*/
-						if (!isset($this->rowArray[$this->index + 1][$key]))
-						{
-							$this->rowArray[$this->index + 1][$key] = $this->rowArray[$this->index][$key];
-						}
-					} else if ($this->index === count($this->rowArray) - 1)
-					{
-						/*
-						* Check whether key exists. If not, set it
-						* If it is set, do not change it
-						*/
-						if (!isset($this->rowArray[$this->index][$key]))
-						{
-							$this->rowArray[$this->index][$key] = $this->rowArray[$this->index - 1][$key];
-						}					
-					}
-
-					/*
-					* Check whether the end of the loop has been reached
-					* Yes, start closing the query string
-					* No, keep the query string open
-					*/
-					if ($counter === count($this->rowArray[$this->index]) - 1) 
-					{
-						$placeholders .= "?)";
-						$createQuery .= "{$key}";
-					} else
-					{
-						$placeholders .= "?,";
-						$createQuery .= "{$key},";
-					}
-
-					/*
-					* Types for bind_param();
-					*/
-					$bindPARAM .= "s";
-
-					/*
-					* Values / References pushed
-					*/
-					$args[] = $this->rowArray[$this->index][$key];
-
 					$counter++;
+					continue;
 				}
+
+				/*
+				* If the required field is empty, set to NULL
+				*/
+				if ($value === "" || is_null($value))
+				{
+					$this->setField($key, NULL);
+				}
+
+				/*
+				* Check whether the end of the loop has been reached
+				* Yes, start closing the query string
+				* No, keep the query string open
+				*/
+				if ($counter === count($this->rowArray[$this->index]) - 1) 
+				{
+					$placeholders .= "?)";
+					$createQuery .= "{$key}";
+				} else
+				{
+					$placeholders .= "?,";
+					$createQuery .= "{$key},";
+				}
+
+				/*
+				* Types for bind_param();
+				*/
+				$bindPARAM .= "s";
+
+				/*
+				* Values / References pushed
+				*/
+				$args[] = $this->getField($key);
+
+				$counter++;
+			}
 			
-				$createQuery .= ") VALUES (";
+			$createQuery .= ") VALUES (";
 
-				/*
-				* Create the complete query string
-				*/
-				$completeSet = "{$createQuery}{$placeholders}";
+			/*
+			* Create the complete query string
+			*/
+			$completeSet = "{$createQuery}{$placeholders}";
 
-				/*
-				* Create the query object
-				*/
-				$stmt = $this->conn->prepare($completeSet);
-				//echo $completeSet."<br/>";
-				/*
-				* Bind the argument array and unpack it
-				*/
-				$stmt->bind_param($bindPARAM, ...$args);
+			/*
+			* Create the query object
+			*/
+			$stmt = $this->conn->prepare($completeSet);
 
-				/*
-				* Execute the created SQL object
-				*/
-				$stmt->execute();
+			/*
+			* Bind the argument array and unpack it
+			*/
+			$stmt->bind_param($bindPARAM, ...$args);
 
-				/*
-				* Return inserted key and assign it to its respective field
-				*/
-				$this->setField($this->getPrimaryKey(), $stmt->insert_id);
+			/*
+			* Execute the created SQL object
+			*/
+			$stmt->execute();
 
-				/*
-				* Reset $this->index, so during fetch time $this->index starts at 0.
-				*/
-				$this->resetIndex();
-				//do stuff halt
-			//}
+			/*
+			* Return inserted key and assign it to its respective field
+			*/
+			$this->setField($this->getPrimaryKey(), $stmt->insert_id);
+
+			/*
+			* Reset $this->index, so during fetch time $this->index starts at 0.
+			*/
+			$this->resetIndex();
 		}
 
 		private function updateQuery()
@@ -1152,7 +1123,7 @@
 				/*
 				* Values / References pushed
 				*/
-				$args[] = $this->rowArray[$this->index][$key];
+				$args[] = $this->getField($key);
 
 				/*
 				* Check whether the end of the loop has been reached
@@ -1343,10 +1314,15 @@
 		{
 			if ($this->index === -1) 
 			{
-				$this->index = $this->index + 1;
+				$this->index = 0;
 
 				return $this->index;
 			}
+		}
+
+		public function getIndex()
+		{
+			return $this->index;
 		}
 
 		public function resetIndex()
