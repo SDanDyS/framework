@@ -107,7 +107,6 @@
 							foreach ($_POST[$key] as $k => $v)
 							{
 								$this->setField($key, $v);
-								echo "{$this->index} saveByPOST <br/>";
 
 								if ($k !== array_key_last($_POST[$key]))
 								{
@@ -115,19 +114,13 @@
 									$this->setTableColumns();
 								}
 							}
-							echo $this->getField($key).$this->rowArray[$this->index][$key]." saveByPOST counters<br/>";
-							$this->index = 0;
+							$this->resetIndex();
 						} else
 						{
 							$this->setField($key, $value);
 						}
 					}
 				}
-				echo $this->getField("testVAR")." saveByPOST outside loop<br/>";
-				$this->next();
-				echo $this->getField("testVAR")." saveByPOST outside loop<br/>";
-				$this->resetIndex();
-				//CHECK SETIMAGES TOMORROW. SOMETHING IN THERE IS FUCKING WITH THE INDEX
 				$this->setImages();
 
 				$this->executeQuery();
@@ -930,7 +923,6 @@
 			// COME BACK HERE AND START SECOND LOOP. CHECK AGAIN WHETHER IT ALREADY EXISTS WITH THAT PRIMARY KEY AND DO THE ABOVE
 				$uniqueID = $this->getPrimaryKey();
 				$this->index = $indexCount;
-				echo "{$this->index} selectQUERY<br/>";
 
 				/*
 				* if the primary key is set, but there is no value given to it, set to 0

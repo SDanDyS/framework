@@ -34,7 +34,7 @@
 				}
 				else 
 				{
-					return self::$server[$server] = $databaseConnection;
+					return self::$server[$key] = $databaseConnection;
 				}
 			}
 			else 
