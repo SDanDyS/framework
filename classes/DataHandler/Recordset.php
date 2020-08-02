@@ -1201,7 +1201,7 @@
 			}
 			else
 			{
-				return;
+				return "Notice: Undefined index: {$key}";
 			}
 		}
 
