@@ -1,3 +1,4 @@
 getRow bug -> Fetches an extra row which is empty.
 Implement a normalize file for CSS
 Create DEFAULT css classes for extra help (this file will also be featured for the image library)
+Create a META file with all the required meta tags in (such as resizers)
