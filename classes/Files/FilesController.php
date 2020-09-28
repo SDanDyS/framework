@@ -154,6 +154,15 @@
 		//deny from all
 		//allow from >>>INSERT YOUR ID<<<
 		//https://www.inmotionhosting.com/support/edu/website-design/access-specific-filetype/
+
+		/*
+			Order Allow,Deny
+			Deny from all		
+			<FilesMatch ".(jpg|gif|png)$">
+			Order Deny,Allow
+				Allow from all
+			</FilesMatch>
+		*/
 		public function setDirectoryPermission($permission, $overwrite = FALSE)
 		{
 			$file = NULL;
