@@ -1,1 +1,21 @@
-getRow bug -> Fetches an extra row which is empty.
+Recordset getRow bug -> Fetches an extra row which is empty.
+
+Recordset setField() bug -> if there is a $_POST or $_GET value send along setField will be overwritten. 
+Create a "ruler" paramater which will prevent a $_POST or $_GET from overwriting the developer his input once he sets the field with setField.
+
+Recordset __construct() -> check whether methods such as setSize() have already been assigned. If yes, prevent it from firing again in the constructor.
+Right now it is overwriting the developer his assignment everytime a new instance is created.
+
+Recordset errorHandler -> optimize it so it returns to the developer, rather then exiting the script.
+
+Recordset setImage() -> optimize it
+
+Expection classes -> Add a JSON validator class.
+
+(rebuild) Divide FilesController into 2 seperate classes. One for FILES and one for DIRECTORIES.
+
+Change the "Files" namespace to "System".
+
+DatabaseConnection\Connection bug -> It will throw an error if it cannot find the connection, but this should only happen in its respective environment. 
+It should NOT throw an error regarding the "localhost" when we're on the live server. However this DOES happen. It's evaluating the localhost connection.
+
