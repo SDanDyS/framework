@@ -22,3 +22,8 @@ It should NOT throw an error regarding the "localhost" when we're on the live se
 Create DEFAULT css classes for extra help (this file will also be featured for the image library)
 
 Create a META file with all the required meta tags in (such as resizers)
+
+Recordset relative_id indexes bug -> Program fails to use the first relative id which was assigned to index 0 in setField to multiple layers. Create a method which checks...
+whether the returned column is a relative INDEX. If yes, start using the first assigned relative ID to the multiple queries (unless multiple keys have been set)
+
+Recordset setSize bug -> array_key_exists misses second argument (named $space)
