@@ -27,3 +27,6 @@ Recordset relative_id indexes bug -> Program fails to use the first relative id 
 whether the returned column is a relative INDEX. If yes, start using the first assigned relative ID to the multiple queries (unless multiple keys have been set)
 
 Recordset setSize bug -> array_key_exists misses second argument (named $space)
+
+Recordset setImageObject bug -> Apparently objects created prior to me sending in an image object will throw errors. Create a check to see whether self::$image is in fact NULL
+If it is null, return empty (and thus stopts the image processing)
