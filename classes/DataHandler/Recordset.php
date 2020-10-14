@@ -60,11 +60,20 @@
 
 			$this->setTableColumns();
 
-			self::setSize();
+			if (!isset(self::$$allowedImageSize))
+			{
+				self::setSize();
+			}
 
-			self::setNameDistortion();
+			if (!isset(self::$nameDistortion))
+			{
+				self::setNameDistortion();
+			}
 
-			self::setExtension();
+			if (!isset(self::$allowedExtensions))
+			{
+				self::setExtension();
+			}
 		}
 
 		public function prepare($query, ...$params)
@@ -602,7 +611,7 @@
 			{
 				$type = strtoupper($type);
 
-				if (array_key_exists($type))
+				if (array_key_exists($type, $space))
 				{
 					self::$allowedImageSize["text"] = "{$size} {$type}";
 					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];	
@@ -689,8 +698,13 @@
 								{
 									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"));
 								}
-
-									$image = self::$image;
+								
+								$image = self::$image;
+								if (is_null($image))
+								{
+									return;
+								}
+									
 									
 									if (empty($image->getParams("path")))
 									{
