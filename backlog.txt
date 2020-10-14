@@ -3,7 +3,7 @@ Recordset getRow bug -> Fetches an extra row which is empty.
 Recordset setField() bug -> if there is a $_POST or $_GET value send along setField will be overwritten. 
 Create a "ruler" paramater which will prevent a $_POST or $_GET from overwriting the developer his input once he sets the field with setField.
 
-Recordset __construct() -> check whether methods such as setSize() have already been assigned. If yes, prevent it from firing again in the constructor.
+(completed) Recordset __construct() -> check whether methods such as setSize() have already been assigned. If yes, prevent it from firing again in the constructor.
 Right now it is overwriting the developer his assignment everytime a new instance is created.
 
 Recordset errorHandler -> optimize it so it returns to the developer, rather then exiting the script.
@@ -26,7 +26,7 @@ Create a META file with all the required meta tags in (such as resizers)
 Recordset relative_id indexes bug -> Program fails to use the first relative id which was assigned to index 0 in setField to multiple layers. Create a method which checks...
 whether the returned column is a relative INDEX. If yes, start using the first assigned relative ID to the multiple queries (unless multiple keys have been set)
 
-Recordset setSize bug -> array_key_exists misses second argument (named $space)
+(completed) Recordset setSize bug -> array_key_exists misses second argument (named $space)
 
-Recordset setImageObject bug -> Apparently objects created prior to me sending in an image object will throw errors. Create a check to see whether self::$image is in fact NULL
+(completed) Recordset setImageObject bug -> Apparently objects created prior to me sending in an image object will throw errors. Create a check to see whether self::$image is in fact NULL
 If it is null, return empty (and thus stopts the image processing)
