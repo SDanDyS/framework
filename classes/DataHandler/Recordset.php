@@ -60,17 +60,18 @@
 
 			$this->setTableColumns();
 
-			if (!isset(self::$$allowedImageSize))
+
+			if (empty(self::$allowedImageSize))
 			{
 				self::setSize();
 			}
 
-			if (!isset(self::$nameDistortion))
+			if (empty(self::$nameDistortion))
 			{
 				self::setNameDistortion();
 			}
 
-			if (!isset(self::$allowedExtensions))
+			if (empty(self::$allowedExtensions))
 			{
 				self::setExtension();
 			}
