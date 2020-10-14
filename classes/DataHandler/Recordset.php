@@ -97,7 +97,7 @@
 			$action = "saveBy{$_SERVER['REQUEST_METHOD']}";
 
 			$this->$action();
-				
+
 		}
 
 
@@ -106,9 +106,9 @@
 		*/
 		private function saveByPOST()
 		{
-			if (count($_POST) > 0) 
+			if (count($_POST) > 0)
 			{
-				foreach ($_POST as $key => $value) 
+				foreach ($_POST as $key => $value)
 				{
 					if ($this->hasField($key, $this->row))
 					{
@@ -134,7 +134,7 @@
 				$this->setImages();
 
 				$this->executeQuery();
-			}	
+			}
 		}
 
 		/*
@@ -180,7 +180,7 @@
 		*/
 		public static function setExtension($allowedExtensions = NULL)
 		{
-			
+
 			//OUT OF USE, BUT REMAINED AS A LIBRARY
 			/*$mime_map = [
 				'video/3gpp2'                                                               => '3g2',
@@ -369,10 +369,10 @@
 				'text/x-scriptzsh'                                                          => 'zsh',
 			];*/
 
-			$extensionsLibrary = 
+			$extensionsLibrary =
 			[
 				// Image formats
-				"IMAGE" => 
+				"IMAGE" =>
 				[
 					'jpg' => 'image/jpeg',
 					'jpeg' => 'image/jpeg',
@@ -403,7 +403,7 @@
 					'mp4' => 'video/mp4',
 					'm4v' => 'video/mp4',
 					'ogv' => 'video/ogg',
-					'mkv' => 'video/x-matroska'				
+					'mkv' => 'video/x-matroska'
 				],
 				// Text formats
 				"TEXT" =>
@@ -419,7 +419,7 @@
 					'rtx' => 'text/richtext',
 					'css' => 'text/css',
 					'htm' => 'text/html',
-					'html' => 'text/html'		
+					'html' => 'text/html'
 				],
 				// Audio formats
 				"AUDIO" =>
@@ -435,7 +435,7 @@
 					'mid' => 'audio/midi',
 					'midi' => 'audio/midi',
 					'wma' => 'audio/wma',
-					'mka' => 'audio/x-matroska'			
+					'mka' => 'audio/x-matroska'
 				],
 				// Misc application formats
 				"MISC" =>
@@ -488,7 +488,7 @@
 					'onetoc' => 'application/onenote',
 					'onetoc2' => 'application/onenote',
 					'onetmp' => 'application/onenote',
-					'onepkg' => 'application/onenote'				
+					'onepkg' => 'application/onenote'
 				],
 				// OpenOffice formats
 				"OPENOFFICE" =>
@@ -499,14 +499,14 @@
 					'odg' => 'application/vnd.oasis.opendocument.graphics',
 					'odc' => 'application/vnd.oasis.opendocument.chart',
 					'odb' => 'application/vnd.oasis.opendocument.database',
-					'odf' => 'application/vnd.oasis.opendocument.formula'				
+					'odf' => 'application/vnd.oasis.opendocument.formula'
 				],
 				// WordPerfect formats
 				"WORDPERFECT" =>
 				[
 					'wp' => 'application/wordperfect',
 					'wpd' => 'application/wordperfect',
-					'wpd' => 'application/wordperfect'				
+					'wpd' => 'application/wordperfect'
 				]
 			];
 
@@ -538,7 +538,7 @@
 				*/
 				foreach ($settedExtensions as $key => $extension)
 				{
-					
+
 					$extension = strtoupper($extension);
 
 					/*
@@ -554,9 +554,9 @@
 					{
 						$this->getErrorMsg(__METHOD__, "Given extension is not a valid extension. <br/> Extension given: {$key}");
 					}
-				}			
+				}
 			}
-			
+
 		}
 
 		/*
@@ -592,7 +592,7 @@
 		*/
 		public static function setSize($size = NULL, $type = NULL)
 		{
-			$space = 
+			$space =
 			[
 				"KB" => "1024",
 				"MB" => "1048576",
@@ -615,7 +615,7 @@
 				if (array_key_exists($type, $space))
 				{
 					self::$allowedImageSize["text"] = "{$size} {$type}";
-					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];	
+					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];
 				} else
 				{
 					exit(__METHOD__. "<br/> The given size type for images is not a valid one. <br/> Input: {$type}");
@@ -631,7 +631,7 @@
 			} else if (array_key_exists($passBack, self::$allowedImageSize))
 			{
 				return self::$allowedImageSize[$passBack];
-			} else 
+			} else
 			{
 				exit(__METHOD__."<br/> Developer input: {$passBack} <br/> Key was not found");
 			}
@@ -639,7 +639,11 @@
 
 		private function setImages()
 		{
-			if (count($_FILES) > 0) 
+			if (!isset($_FILES))
+            {
+                return;
+            }
+			if (count($_FILES) > 0)
 			{
 				foreach($_FILES as $fileName => $singleFile)
 				{
@@ -699,14 +703,14 @@
 								{
 									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"));
 								}
-								
+
 								$image = self::$image;
 								if (is_null($image))
 								{
 									return;
 								}
-									
-									
+
+
 									if (empty($image->getParams("path")))
 									{
 										$this->getErrorMsg(__METHOD__, "The given path does not exist", TRUE);
@@ -717,7 +721,7 @@
 											$this->getErrorMsg(__METHOD__, "The given path is not a directory", TRUE);
 										}
 
-										switch (self::$nameDistortion) 
+										switch (self::$nameDistortion)
 										{
 											case TRUE:
 												$name = uniqid("", true);
@@ -726,7 +730,7 @@
 											case FALSE:
 												$name = $name;
 											break;
-	
+
 											default:
 												$name = $name;
 											break;
@@ -750,7 +754,7 @@
 								} else
 								{
 									$this->getErrorMsg(__METHOD__, "The set MIME type is not allowed.", TRUE);
-								}								
+								}
 							}
 						} else
 						{
@@ -774,9 +778,9 @@
 					foreach ($this->row as $key => $innerArray)
 					{
 						$this->setField($key, "");
-					}					
-				}			
-			} else 
+					}
+				}
+			} else
 			{
 				/*
 				* Retrieve the column names and types when method executeQuery is fired
@@ -789,11 +793,11 @@
 				* Store the fetched result
 				*/
 				$result = $columnRetriever->get_result();
-			
+
 				/*
 				* Store the retrieved information of the columns
 				*/
-				while ($row = $result->fetch_assoc()) 
+				while ($row = $result->fetch_assoc())
 				{
 					$this->row[$row["Field"]]["Field"] = $row["Field"];
 					$this->row[$row["Field"]]["Type"] = $row["Type"];
@@ -803,7 +807,7 @@
 					$this->row[$row["Field"]]["Extra"] = $row["Extra"];
 
 					$this->setField($row["Field"], "");
-				}			
+				}
 			}
 		}
 
@@ -815,7 +819,7 @@
 		private function getPrimaryKey()
 		{
 			$uniqueID = NULL;
-			foreach ($this->row as $entryArray) 
+			foreach ($this->row as $entryArray)
 			{
 				if ($entryArray["Key"] === "PRI")
 				{
@@ -827,9 +831,9 @@
 
 		private function executeQuery($sql = NULL, $params = NULL)
 		{
-			if (!is_null($sql)) 
+			if (!is_null($sql))
 			{
-				$haystack = 
+				$haystack =
 				[
 					"select" => "SELECT",
 					"update" => "UPDATE",
@@ -840,7 +844,7 @@
 				$sqlExplosion = explode(" ", $sql);
 				$sqlAction = $sqlExplosion[0];
 
-				
+
 			// 	* SQL commands
 
 			 	$select = $haystack["select"];
@@ -854,7 +858,7 @@
 				{
 					$typeReference = str_repeat("s", count($params));
 
-					$completedQuery->bind_param($typeReference, ...$params);				
+					$completedQuery->bind_param($typeReference, ...$params);
 				}
 
 				/*
@@ -873,16 +877,16 @@
 
 					/*
 					* loop through the rows and add it
-					* if the resultset is 0, there is no need to fetch data, it's simply set to fetch the keys 
+					* if the resultset is 0, there is no need to fetch data, it's simply set to fetch the keys
 					*/
-					if ($num_of_rows > 0) 
+					if ($num_of_rows > 0)
 					{
 
 						$this->setIndex();
 
 						while ($row = $result->fetch_assoc())
 						{
-							foreach ($row as $key => $columnName) 
+							foreach ($row as $key => $columnName)
 							{
 								$this->setField($key, $row[$key]);
 							}
@@ -900,7 +904,7 @@
 						*/
 						$this->resetIndex();
 					}
-					
+
 				} else
 				{
 					/*
@@ -909,7 +913,7 @@
 					$completedQuery->execute();
 
 					/*
-					* if the query contains an update or insert, retrieve the unique key. 
+					* if the query contains an update or insert, retrieve the unique key.
 					*/
 					if ($sqlAction === $insert || $sqlAction === $update)
 					{
@@ -947,7 +951,7 @@
 				{
 					$this->setField($uniqueID, 0);
 				}
-			
+
 				$sql = "SELECT * FROM `{$this->table}` WHERE `{$uniqueID}` = ?";
 
 				$selectQuery = $this->conn->prepare($sql);
@@ -966,13 +970,13 @@
 
 				$num_of_rows = $result->num_rows;
 
-				if ($num_of_rows > 0) 
+				if ($num_of_rows > 0)
 				{
 					$this->updateQuery();
 				} else
 				{
 					$this->insertQuery();
-				}			
+				}
 			}
 		}
 
@@ -1028,7 +1032,7 @@
 				* Yes, start closing the query string
 				* No, keep the query string open
 				*/
-				if ($counter === count($this->rowArray[$this->index]) - 1) 
+				if ($counter === count($this->rowArray[$this->index]) - 1)
 				{
 					$placeholders .= "?)";
 					$createQuery .= "{$key}";
@@ -1050,7 +1054,7 @@
 
 				$counter++;
 			}
-			
+
 			$createQuery .= ") VALUES (";
 
 			/*
@@ -1116,7 +1120,7 @@
 				* Types for bind_param();
 				*/
 				$bindPARAM .= "s";
-				
+
 				/*
 				* If the primary key equals the key in the loop
 				* If yes, return the loop and go on with the next key
@@ -1206,7 +1210,7 @@
 			* else return nothing (silence).
 			* returning empty will prevent PHP from throwing an error.
 			*/
-			if ($this->hasField($key, $this->row) && !isset($this->rowArray[$this->index][$key])) 
+			if ($this->hasField($key, $this->row) && !isset($this->rowArray[$this->index][$key]))
 			{
 				$this->rowArray[$this->index][$key] = "";
 				return $this->rowArray[$this->index][$key];
@@ -1222,7 +1226,7 @@
 
 		public function getRow($key = NULL, $value = NULL)
 		{
-			if (is_null($key)) 
+			if (is_null($key))
 			{
 				return $this->rowArray;
 			}
@@ -1262,7 +1266,7 @@
 
 		private function getErrorMsg($error, $clause, $exit = FALSE)
 		{
-			switch (self::$scriptError) 
+			switch (self::$scriptError)
 			{
 				case 'EXIT':
 					exit("{$error} <br/> Error: {$clause}");
@@ -1271,7 +1275,7 @@
 				case 'JSON':
 					$this->response[] = $clause;
 				break;
-	
+
 				default:
 					exit("scriptError has not been set.");
 				break;
@@ -1287,14 +1291,14 @@
 
 		/*
 		* function hasField checks whether the array_key exists which was requested.
-		* it is an expansion of in_array(). 
+		* it is an expansion of in_array().
 		* the function will check whether the multidimensional array contains the value.
 		*/
 		private function hasField($key, $haystack, $strict = false)
 		{
 			foreach ($haystack as $item) {
 
-				if (($strict ? $item === $key : $item == $key) || (is_array($item) && $this->hasField($key, $item, $strict))) 
+				if (($strict ? $item === $key : $item == $key) || (is_array($item) && $this->hasField($key, $item, $strict)))
 				{
 					return true;
 				}
@@ -1319,7 +1323,7 @@
 
 		public function setIndex()
 		{
-			if ($this->index === -1) 
+			if ($this->index === -1)
 			{
 				$this->index = 0;
 
@@ -1334,7 +1338,7 @@
 
 		public function resetIndex()
 		{
-			if ($this->index > -1) 
+			if ($this->index > -1)
 			{
 				$this->index = -1;
 
