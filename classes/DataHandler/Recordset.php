@@ -705,7 +705,7 @@
 								}
 
 								$image = self::$image;
-								if (is_null($image))
+								if (!is_object($image) || is_null($image) || empty($image))
 								{
 									return;
 								}
@@ -883,9 +883,21 @@
 					{
 
 						$this->setIndex();
+						
+						/*
+                         * Keep track on how often $row gets looped
+                         * Compare it to the set index
+                         * If it's lower, delete the newest entry to prevent an empty array from being fetched along
+                         */
+						$i = -1;
 
 						while ($row = $result->fetch_assoc())
 						{
+							/*
+                             * Increment $i to keep count of the row which is being fetched by the database 
+                             */
+							$i++;
+
 							foreach ($row as $key => $columnName)
 							{
 								$this->setField($key, $row[$key]);
@@ -898,6 +910,15 @@
 
 							$this->setTableColumns();
 						}
+
+						/*
+                         * If the index is higher then the amount of times the database looped
+                         * Unset the latest (and most likely empty) row
+                         */
+						if ($this->getIndex() > $i)
+                        {
+                            unset($this->rowArray[$this->getIndex()]);
+                        }
 
 						/*
 						* Reset $this->index, so during fetch time $this->index starts at 0.

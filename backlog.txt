@@ -1,4 +1,9 @@
-Recordset getRow bug -> Fetches an extra row which is empty.
+(completed) Recordset getRow bug -> Fetches an extra row which is empty.
+ADDITIONAL INFO: getRow was not the root problem of the bug.
+The bug started when a SELECT would be done. It would loop through the row of the database and assign it and then create the next row (prepare the next row)...
+So the second iteration could be done and values could be assigned.
+PROBLEM: When the database hit its last row, the next row would be created for the next iteration of the datase. However the next iteration was empty and therefore returned FALSE...
+And thus, leaving an empty entry.
 
 Recordset setField() bug -> if there is a $_POST or $_GET value send along setField will be overwritten. 
 Create a "ruler" paramater which will prevent a $_POST or $_GET from overwriting the developer his input once he sets the field with setField.
