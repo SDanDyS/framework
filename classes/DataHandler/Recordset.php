@@ -645,8 +645,20 @@
             }
 			if (count($_FILES) > 0)
 			{
+                /*
+                 * Keep track on how often $_FILES gets looped
+                 * Compare it to the set index
+                 * If it's lower, delete the newest entry to prevent an empty array from being fetched along
+                 */
+                $i = -1;
+
 				foreach($_FILES as $fileName => $singleFile)
 				{
+                    /*
+                     * Increment $i to keep count of the row which is being fetched by the database
+                     */
+                    $i++;
+
 					$name = $singleFile["name"];
 					$tmpName = $singleFile["tmp_name"];
 					$type = $singleFile["type"];
@@ -765,6 +777,19 @@
 
 					$this->setTableColumns();
 				}
+
+                /*
+                 * If the index is higher then the amount of times the database looped
+                 * Unset the latest (and most likely empty) row
+                 */
+                if ($this->getIndex() > $i)
+                {
+					if (empty($this->rowArray[$this->getIndex()]))
+                    {
+						unset($this->rowArray[$this->getIndex()]);
+                    }
+                }
+
 				$this->resetIndex();
 			}
 		}
@@ -883,7 +908,7 @@
 					{
 
 						$this->setIndex();
-						
+
 						/*
                          * Keep track on how often $row gets looped
                          * Compare it to the set index
@@ -894,7 +919,7 @@
 						while ($row = $result->fetch_assoc())
 						{
 							/*
-                             * Increment $i to keep count of the row which is being fetched by the database 
+                             * Increment $i to keep count of the row which is being fetched by the database
                              */
 							$i++;
 

@@ -2,10 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\classes",
-    "\\classes\\DatabaseConnection",
-    "\\classes\\DataHandler",
-    "\\classes\\Files"
+    "\\classes\\DataHandler"
   ],
-  "SelectedNode": "\\classes\\DatabaseConnection\\Connection.php",
+  "SelectedNode": "\\classes\\DataHandler\\Recordset.php",
   "PreviewInSolutionExplorer": false
 }
