@@ -35,3 +35,9 @@ whether the returned column is a relative INDEX. If yes, start using the first a
 
 (completed) Recordset setImageObject bug -> Apparently objects created prior to me sending in an image object will throw errors. Create a check to see whether self::$image is in fact NULL
 If it is null, return empty (and thus stopts the image processing)
+
+
+setImages bug -> same bug as when the SELECT happened. It adds one row too many.
+PROBLEM: I cannot check whether the index is simply bigger then the count, because if POST or GET had already initialized a couple of values, they'll be deleted.
+ADDITIONAL INFO: Solve it by checking whether index is bigger then the count. If yes, check the last set index of rowArray. Loop through each value and check whether SOMETHING isn't empty. If everything is empty, it'll mean...
+That it should be deleted. If it isn't empty, if even ONE value is NOT empty, do NOT delete it.

@@ -1,11 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\classes",
-    "\\classes\\DatabaseConnection",
-    "\\classes\\DataHandler",
-    "\\classes\\Files"
+    "\\js"
   ],
-  "SelectedNode": "\\classes\\DatabaseConnection\\Connection.php",
+  "SelectedNode": "\\js\\change.js",
   "PreviewInSolutionExplorer": false
 }
