@@ -1,9 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\classes",
-    "\\classes\\DataHandler"
+    "\\js"
   ],
-  "SelectedNode": "\\classes\\DataHandler\\Recordset.php",
+  "SelectedNode": "\\js\\change.js",
   "PreviewInSolutionExplorer": false
 }
