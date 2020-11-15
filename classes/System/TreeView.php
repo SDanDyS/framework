@@ -1,5 +1,5 @@
 <?php
-namespace DirOverview;
+namespace System;
 class Treeview {
  
     private $files = [];
