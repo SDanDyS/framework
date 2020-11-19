@@ -5,7 +5,7 @@ class JsonValidator
     public function __construct($jsonToValidate)
     {
 
-        $callback = "Decoding: " . $jsonToValidate;
+        $callback = "<br/> Decoding: " . $jsonToValidate;
 
         $callback = "<br>Error: ";
 

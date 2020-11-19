@@ -1,8 +1,12 @@
 {
   "ExpandedNodes": [
     "",
+    "\\classes",
+    "\\classes\\DatabaseConnection",
+    "\\classes\\DataHandler",
+    "\\classes\\User",
     "\\js"
   ],
-  "SelectedNode": "\\js\\change.js",
+  "SelectedNode": "\\autoloader.php",
   "PreviewInSolutionExplorer": false
 }

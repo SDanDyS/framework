@@ -778,20 +778,34 @@
 					$this->setTableColumns();
 				}
 
-                /*
-                 * If the index is higher then the amount of times the database looped
-                 * Unset the latest (and most likely empty) row
-                 */
-                if ($this->getIndex() > $i)
-                {
-					if (empty($this->rowArray[$this->getIndex()]))
-                    {
-						unset($this->rowArray[$this->getIndex()]);
-                    }
-                }
+				$this->unsetOffset($i);
 
 				$this->resetIndex();
 			}
+		}
+
+		private function unsetOffset($i)
+		{
+			$empty = 0;
+			/*
+            * If the index is higher then the amount of times the database looped
+            * Unset the latest (and most likely empty) row
+            */
+            if ($this->getIndex() > $i)
+            {
+				foreach ($this->rowArray[$this->getIndex()] as $k => $v)
+				{
+					if (empty($v))
+					{
+						$empty++;
+					}
+				}
+
+				if (count($this->rowArray[$this->getIndex()]) === $empty)
+				{
+					unset($this->rowArray[$this->getIndex()]);
+				}
+            }
 		}
 
 		private function setTableColumns()
@@ -841,7 +855,7 @@
 			return $this->row;
 		}
 
-		private function getPrimaryKey()
+		public function getPrimaryKey()
 		{
 			$uniqueID = NULL;
 			foreach ($this->row as $entryArray)
@@ -936,14 +950,8 @@
 							$this->setTableColumns();
 						}
 
-						/*
-                         * If the index is higher then the amount of times the database looped
-                         * Unset the latest (and most likely empty) row
-                         */
-						if ($this->getIndex() > $i)
-                        {
-                            unset($this->rowArray[$this->getIndex()]);
-                        }
+						
+						$this->unsetOffset($i);
 
 						/*
 						* Reset $this->index, so during fetch time $this->index starts at 0.
