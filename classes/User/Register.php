@@ -1,6 +1,7 @@
 <?php
 namespace User;
 use DataHandler\Recordset;
+use Encryption\Encryption;
 class Register
 {
     private $databaseAccess;
@@ -19,7 +20,7 @@ class Register
     public static function debugger($debuggingTools = true)
     {
         ini_set('error_log', './errors.log');
-        error_reporting(E_ALL);
+        //error_reporting(E_ALL);
         self::$debugger = $debuggingTools;
     }
 
@@ -28,18 +29,17 @@ class Register
         return self::$debugger;
     }
 
-    public static function var_dump($dump)
+    public function hash($data, $hash = null)
     {
-        if (self::getDebuggerStatus())
+        if (is_null($hash))
         {
-            var_dump($dump);
-            echo "<br/>";
+            $encrypt = new Encryption();
+        } else
+        {
+            $encrypt = new Encryption($hash);
         }
-    }
 
-    public function encryptPassword($pwd)
-    {
-        return password_hash($pwd, PASSWORD_DEFAULT);
+        return $encrypt->hash($data);
     }
 
     public function save()
@@ -50,13 +50,11 @@ class Register
     public function setParameters(...$params)
     {
         $this->params = $params;
-        self::var_dump($this->params);
     }
 
     public function setValues(...$values)
     {
         $this->values = $values;
-        self::var_dump($this->values);
     }
 
     private function selectQuery()
@@ -82,8 +80,6 @@ class Register
             }
         }
         $this->databaseAccess->prepare($query, ...$this->values);
-        //self::var_dump($query);
-        //self::var_dump($this->values);
     }
 
     public function dataExists()

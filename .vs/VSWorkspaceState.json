@@ -2,11 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\classes",
-    "\\classes\\DatabaseConnection",
     "\\classes\\DataHandler",
+    "\\classes\\Encryption",
     "\\classes\\User",
     "\\js"
   ],
-  "SelectedNode": "\\autoloader.php",
+  "SelectedNode": "\\classes\\User\\Register.php",
   "PreviewInSolutionExplorer": false
 }
