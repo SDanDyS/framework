@@ -160,9 +160,8 @@ class Login
             }
 
             $_SESSION["user"][$key] = $value;
-
-            return true;
         }
+        return true;
     }
 }
 ?>
