@@ -1,15 +1,6 @@
-(completed) Recordset getRow bug -> Fetches an extra row which is empty.
-ADDITIONAL INFO: getRow was not the root problem of the bug.
-The bug started when a SELECT would be done. It would loop through the row of the database and assign it and then create the next row (prepare the next row)...
-So the second iteration could be done and values could be assigned.
-PROBLEM: When the database hit its last row, the next row would be created for the next iteration of the datase. However the next iteration was empty and therefore returned FALSE...
-And thus, leaving an empty entry.
-
 Recordset setField() bug -> if there is a $_POST or $_GET value send along setField will be overwritten. 
 Create a "ruler" paramater which will prevent a $_POST or $_GET from overwriting the developer his input once he sets the field with setField.
 
-(completed) Recordset __construct() -> check whether methods such as setSize() have already been assigned. If yes, prevent it from firing again in the constructor.
-Right now it is overwriting the developer his assignment everytime a new instance is created.
 
 Recordset errorHandler -> optimize it so it returns to the developer, rather then exiting the script.
 
@@ -31,15 +22,5 @@ Create a META file with all the required meta tags in (such as resizers)
 Recordset relative_id indexes bug -> Program fails to use the first relative id which was assigned to index 0 in setField to multiple layers. Create a method which checks...
 whether the returned column is a relative INDEX. If yes, start using the first assigned relative ID to the multiple queries (unless multiple keys have been set)
 
-(completed) Recordset setSize bug -> array_key_exists misses second argument (named $space)
-
-(completed) Recordset setImageObject bug -> Apparently objects created prior to me sending in an image object will throw errors. Create a check to see whether self::$image is in fact NULL
-If it is null, return empty (and thus stopts the image processing)
-
-
-(completed) setImages bug -> same bug as when the SELECT happened. It adds one row too many.
-PROBLEM: I cannot check whether the index is simply bigger then the count, because if POST or GET had already initialized a couple of values, they'll be deleted.
-ADDITIONAL INFO: Solve it by checking whether index is bigger then the count. If yes, check the last set index of rowArray. Loop through each value and check whether SOMETHING isn't empty. If everything is empty, it'll mean...
-That it should be deleted. If it isn't empty, if even ONE value is NOT empty, do NOT delete it.
 
 Create a wrapper class for SESSION. Right now this is set in the Login script. This is bad practice.
