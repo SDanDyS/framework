@@ -2,10 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\classes",
-    "\\classes\\DataHandler",
-    "\\classes\\Encryption",
+    "\\classes\\DatabaseConnection",
     "\\css"
   ],
-  "SelectedNode": "\\css\\normalize.css",
+  "SelectedNode": "\\backlog.txt",
   "PreviewInSolutionExplorer": false
 }

@@ -1,9 +1,3 @@
-Recordset setField() bug -> if there is a $_POST or $_GET value send along setField will be overwritten. 
-Create a "ruler" paramater which will prevent a $_POST or $_GET from overwriting the developer his input once he sets the field with setField.
-
-
-Recordset errorHandler -> optimize it so it returns to the developer, rather then exiting the script.
-
 Recordset setImage() -> optimize it
 
 Expection classes -> Add a JSON validator class.

@@ -1,17 +1,16 @@
 <?php
 	require_once "autoloader.php";
-
 	if (isset($_GET["submit"]))
 	{
 		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
-		$obj = new User\Register("test");
-		$_GET["testINT"] = $obj->encryptPassword($_GET["testINT"]);
-		$obj->setParameters("testVAR");
-		$obj->setValues("test");
-		if (!$obj->dataExists())
-		{
-			$obj->save();
-		}
+		$server = "localhost";
+		$name = "root";
+		$pwd = "";
+		$db = "vh86810-1db1";
+		$conn = new mysqli($server, $name, $pwd, $db);
+		$obj = new DataHandler\Recordset("test");
+		$obj->setField("b", "suck", true);
+		$obj->save();
 	}
 ?>
 <!DOCTYPE html>
@@ -22,7 +21,7 @@
 <body>
 	<form>
 		<input type="text" name="testVAR" id="asd"/>
-		<input type="text" name="testINT" id="test"/>
+		<input type="text" name="b" id="test"/>
 		<button name="submit" type="submit">submit</button>
 	</form>
 </body>

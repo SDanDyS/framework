@@ -15,6 +15,7 @@
 		/*
 		* $row will keep the database table its column names
 		* $rowArray will keep the fetched/inserted data
+		* $fieldCatcher catches fields which were explicetly set
 		* $index decides what the count will be for $rowArray
 		* $table sets the table name
 		* $conn sets the connection for the table to retrieve/insert from
@@ -23,6 +24,8 @@
 		private $row = [];
 
 		private $rowArray = [];
+
+		private $fieldCatcher = [];
 
 		private $index = -1;
 
@@ -39,9 +42,9 @@
 		/*
 		* Custom error responses
 		*/
-		private $response;
+		private $response = [];
 
-		private static $scriptError;
+		private $scriptError;
 
 		/*
 		* $table will be assigned at creation time, this way it'll be accessable by
@@ -54,7 +57,7 @@
 		{
 			$this->conn = Connection::setConnection();
 
-			self::$scriptError = $scriptError;
+			$this->scriptError = $scriptError;
 
 			$this->table = $table;
 
@@ -94,10 +97,15 @@
 			* NOTICE: Send an argument along to save, to fetch both GET and POST.
 			* Send a hierarchy argument along, to decide which one should overwrite
 			*/
-			$action = "saveBy{$_SERVER['REQUEST_METHOD']}";
+			$action = "saveBy".$this->getRequestMethod();
 
 			$this->$action();
 
+		}
+
+		public function getRequestMethod()
+		{
+			return $_SERVER['REQUEST_METHOD'];
 		}
 
 
@@ -112,6 +120,13 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
+						//IF $fieldCatcher CONTAINS KEY
+						//SKIP THE ITERATION
+						//POST OR GET REMAINS, BUT WILL NOT BE SUBMITTED
+						if ($this->hasField($key, $this->fieldCatcher))
+						{
+							continue;
+						}
 						if (is_array($_POST[$key]))
 						{
 							foreach ($_POST[$key] as $k => $v)
@@ -133,7 +148,14 @@
 				}
 				$this->setImages();
 
-				$this->executeQuery();
+				if (count($this->response) > 0)
+				{
+					return FALSE;
+				} else
+				{
+					$this->executeQuery();
+					return TRUE;
+				}
 			}
 		}
 
@@ -148,6 +170,13 @@
 				{
 					if ($this->hasField($key, $this->row))
 					{
+						//IF $fieldCatcher CONTAINS KEY
+						//SKIP THE ITERATION
+						//POST OR GET REMAINS, BUT WILL NOT BE SUBMITTED
+						if ($this->hasField($key, $this->fieldCatcher))
+						{
+							continue;
+						}
 						if (is_array($_GET[$key]))
 						{
 							foreach ($_GET[$key] as $k => $v)
@@ -171,7 +200,14 @@
 
 				$this->setImages();
 
-				$this->executeQuery();
+				if (count($this->response) > 0)
+				{
+					return FALSE;
+				} else
+				{
+					$this->executeQuery();
+					return TRUE;
+				}
 			}
 		}
 
@@ -552,7 +588,7 @@
 						}
 					} else
 					{
-						$this->getErrorMsg(__METHOD__, "Given extension is not a valid extension. <br/> Extension given: {$key}");
+						$this->getErrorMsg(__METHOD__."<br/> Given extension is not a valid extension. <br/> Extension given: {$key}", TRUE);
 					}
 				}
 			}
@@ -618,7 +654,7 @@
 					self::$allowedImageSize["maximumBytes"] = $size * $space[$type];
 				} else
 				{
-					exit(__METHOD__. "<br/> The given size type for images is not a valid one. <br/> Input: {$type}");
+					$this->getErrorMsg(__METHOD__. "<br/> The given size type for images is not a valid one. <br/> Input: {$type} <br/>", TRUE);
 				}
 			}
 		}
@@ -633,7 +669,7 @@
 				return self::$allowedImageSize[$passBack];
 			} else
 			{
-				exit(__METHOD__."<br/> Developer input: {$passBack} <br/> Key was not found");
+				$this->getErrorMsg(__METHOD__."<br/> Developer input: {$passBack} <br/> Key was not found <br/>", TRUE);
 			}
 		}
 
@@ -645,6 +681,12 @@
             }
 			if (count($_FILES) > 0)
 			{
+				$image = self::$image;
+				if (!is_object($image) || is_null($image) || empty($image))
+				{
+					return;
+				}
+
                 /*
                  * Keep track on how often $_FILES gets looped
                  * Compare it to the set index
@@ -708,29 +750,24 @@
 								if ($mimeType && self::$allowedExtensions[$fileExtension] === $finfo->file($tmpName))
 								{
 
-								/*
-								* Check whether FILE SIZE is bigger then the maximum amount of allowed bytes
-								*/
-								if ($size > self::getSize("maximumBytes"))
-								{
-									$this->getErrorMsg(__METHOD__, "Exceeded the allowed size. Allowed image size is: ".self::getSize("text"));
-								}
+									/*
+									* Check whether FILE SIZE is bigger then the maximum amount of allowed bytes
+									*/
+									if ($size > self::getSize("maximumBytes"))
+									{
+										$this->getErrorMsg(__METHOD__."<br/> Exceeded the allowed size. <br/> Allowed image size is: ".self::getSize("text")."<br/>");
 
-								$image = self::$image;
-								if (!is_object($image) || is_null($image) || empty($image))
-								{
-									return;
-								}
-
+										continue;
+									}
 
 									if (empty($image->getParams("path")))
 									{
-										$this->getErrorMsg(__METHOD__, "The given path does not exist", TRUE);
+										$this->getErrorMsg(__METHOD__."<br/> The given path does not exist <br/> Given path: ".$image->getParams("path")."<br/>", TRUE);
 									} else
 									{
 										if(!is_dir($image->getParams("path")))
 										{
-											$this->getErrorMsg(__METHOD__, "The given path is not a directory", TRUE);
+											$this->getErrorMsg(__METHOD__."<br/> The given path is not a directory <br/> Given path: ".$image->getParams("path")."<br/>", TRUE);
 										}
 
 										switch (self::$nameDistortion)
@@ -765,12 +802,12 @@
 									}
 								} else
 								{
-									$this->getErrorMsg(__METHOD__, "The set MIME type is not allowed.", TRUE);
+									$this->getErrorMsg(__METHOD__."<br/> The set MIME type is not allowed. <br/>", TRUE);
 								}
 							}
 						} else
 						{
-							$this->getErrorMsg(__METHOD__, new Exception\UploadException($error), TRUE);
+							$this->getErrorMsg(__METHOD__."<br/>".new Exception\UploadException($error), TRUE);
 						}
 					}
 					$this->next();
@@ -1237,8 +1274,12 @@
 		/*
 		* setField initiates the column you wish to set
 		*/
-		public function setField($key, $value)
+		public function setField($key, $value, $catcher = FALSE)
 		{
+			if (!is_bool($catcher))
+			{
+				$this->getErrorMsg(__METHOD__."<br/> Third parameter must be type boolean.<br/>", TRUE);
+			}
 			/*
 			* Set index to 0
 			*/
@@ -1249,6 +1290,10 @@
 			*/
 			if ($this->hasField($key, $this->row))
 			{
+				if ($catcher)
+				{
+					$this->fieldCatcher[$this->index][$key] = $key;
+				}
 				$this->rowArray[$this->index][$key] = $value;
 			}
 		}
@@ -1274,7 +1319,8 @@
 			}
 			else
 			{
-				return "Notice: Undefined index: {$key}";
+				$this->getErrorMsg(__METHOD__."<br/> Requested key: {$key} <br/> Error: Key was not found");
+				return;
 			}
 		}
 
@@ -1284,11 +1330,11 @@
 			{
 				return $this->rowArray;
 			}
-			else if (array_key_exists($key, $this->rowArray) && is_null($value))
+			else if (array_key_exists($key, $this->rowArray) && is_integer($key) && is_null($value))
 			{
 				return $this->rowArray[$key];
 			}
-			else if (!is_null($value))
+			else if (!is_integer($key) && is_null($value))
 			{
 				$matchedArray = [];
 
@@ -1296,51 +1342,70 @@
 
 				foreach ($this->rowArray as $count => $innerArray)
 				{
-					if ($this->rowArray[$count][$key] === $value)
+					if (isset($innerArray[$key]))
 					{
-						$matchedArray[] = $this->rowArray[$count];
+						$matchedArray[] = $innerArray[$key];
 					}
 				}
 				$this->resetIndex();
 
-				if (count($matchedArray) > 0)
-				{
-					return $matchedArray;
-				}
-				else
-				{
-					$this->getErrorMsg(__METHOD__, "Row {$key} is not a row and could therefore not be retrieved.");
-				}
+				return $matchedArray;
 			}
-			else
+			else if (!is_integer($key) && !is_null($value))
 			{
-				$this->getErrorMsg(__METHOD__, "The column <b>{$key}</b> with the requested value <b>{$value}</b> could not be found in any row");
+				$matchedArray = [];
+
+				$this->setIndex();
+
+				foreach ($this->rowArray as $count => $innerArray)
+				{
+					if (isset($innerArray[$key]))
+					{
+						if ($innerArray[$key] === $value)
+						{
+							$matchedArray[] = $innerArray;
+						}
+					}
+				}
+				$this->resetIndex();
+
+				//EMPTY ARRAY IS FETCHED UPON "FAILURE"
+				return $matchedArray;
+			}
+			else if (!array_key_exists($key, $this->rowArray))
+			{
+				$this->getErrorMsg(__METHOD__."<br/> Requested key: {$key} <br/> Error: Key was not found");
 			}
 		}
 
-		private function getErrorMsg($error, $clause, $exit = FALSE)
+		private function getErrorMsg($error, $exit = FALSE)
 		{
-			switch (self::$scriptError)
+			if ($exit === TRUE)
 			{
-				case 'EXIT':
-					exit("{$error} <br/> Error: {$clause}");
-				break;
+				exit($error);
+			}
 
-				case 'JSON':
-					$this->response[] = $clause;
-				break;
+			switch (strtoupper($this->scriptError)) 
+			{
+				case "JSON":
+					$this->response[] = $error;
+					break;
 
+				case "EXIT":
+					exit($error);
+					break;
+	
 				default:
-					exit("scriptError has not been set.");
-				break;
+					exit($error);
+					break;
 			}
+		}
 
-			if ($exit)
-			{
-				$fatal = json_encode($this->response);
-
-				exit($fatal);
-			}
+		public function getErrors()
+		{
+			$encodedErrors = json_encode($this->response);
+			$this->response = [];
+			return $encodedErrors;
 		}
 
 		/*
