@@ -1,15 +1,15 @@
 <?php
 	require_once "autoloader.php";
+		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
+		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 	if (isset($_GET["submit"]))
 	{
-		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
 		$server = "localhost";
 		$name = "root";
 		$pwd = "";
 		$db = "vh86810-1db1";
-		$conn = new mysqli($server, $name, $pwd, $db);
+
 		$obj = new DataHandler\Recordset("test");
-		$obj->setField("b", "suck", true);
 		$obj->save();
 	}
 ?>

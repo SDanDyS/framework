@@ -603,7 +603,7 @@
 		{
 			if (!is_bool($distortion))
 			{
-				exit(__METHOD__."<br/> Input was not valid.<br/> Input: {$distortion}");
+				$this->getErrorMsg(__METHOD__."<br/> Input was not valid.<br/> Input: {$distortion}", TRUE);
 			}
 			self::$nameDistortion = $distortion;
 		}
@@ -755,7 +755,7 @@
 									*/
 									if ($size > self::getSize("maximumBytes"))
 									{
-										$this->getErrorMsg(__METHOD__."<br/> Exceeded the allowed size. <br/> Allowed image size is: ".self::getSize("text")."<br/>");
+										$this->getErrorMsg(__METHOD__."<br/> {$name} exceeded the allowed size. <br/> Allowed image size is: ".self::getSize("text")."<br/>");
 
 										continue;
 									}
@@ -802,12 +802,12 @@
 									}
 								} else
 								{
-									$this->getErrorMsg(__METHOD__."<br/> The set MIME type is not allowed. <br/>", TRUE);
+									$this->getErrorMsg(__METHOD__."<br/> The set MIME type is not allowed. <br/>");
 								}
 							}
 						} else
 						{
-							$this->getErrorMsg(__METHOD__."<br/>".new Exception\UploadException($error), TRUE);
+							$this->getErrorMsg(__METHOD__."<br/>".new Exception\UploadException($error));
 						}
 					}
 					$this->next();

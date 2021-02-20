@@ -6,9 +6,6 @@ Expection classes -> Add a JSON validator class.
 
 Change the "Files" namespace to "System".
 
-DatabaseConnection\Connection bug -> It will throw an error if it cannot find the connection, but this should only happen in its respective environment. 
-It should NOT throw an error regarding the "localhost" when we're on the live server. However this DOES happen. It's evaluating the localhost connection.
-
 Create DEFAULT css classes for extra help (this file will also be featured for the image library)
 
 Create a META file with all the required meta tags in (such as resizers)

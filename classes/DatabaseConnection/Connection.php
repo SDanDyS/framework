@@ -13,20 +13,20 @@
 		private static $host;
 		private static $server = [];
 
-		public function __construct($server, $dbServer, $dbUserName, $dbPwd, $dbName)
+		public function __construct($target, $dbServer, $dbUserName, $dbPwd, $dbName)
 		{
-			$databaseConnection = new mysqli($dbServer, $dbUserName, $dbPwd, $dbName);
-
-			self::$server[$server] = $databaseConnection;
-
 			self::setRemoteHost();
+
+			self::$server[$target] = [$dbServer, $dbUserName, $dbPwd, $dbName];
 		}
 
 		private static function getServer($key)
 		{
 			if (array_key_exists($key, self::$server)) 
 			{
-				$databaseConnection = self::$server[$key];
+				$databaseCredentials = self::$server[$key];
+
+				$databaseConnection = new mysqli(...$databaseCredentials);
 
 				if ($databaseConnection->connect_error) 
 				{
@@ -34,7 +34,7 @@
 				}
 				else 
 				{
-					return self::$server[$key] = $databaseConnection;
+					return $databaseConnection;
 				}
 			}
 			else 
@@ -56,21 +56,18 @@
 
 		public static function setRemoteHost()
 		{
-
 			if ($_SERVER["REMOTE_ADDR"] == "127.0.0.1" || $_SERVER["REMOTE_ADDR"] == "::1")
 			{
 				self::$host = "local";
 			} else 
 			{
 				self::$host = "master";
-			}	
-			
+			}			
 		}
 
 		public static function getRemoteHost()
 		{
 			return self::$host;
 		}
-
 	}
 ?>
