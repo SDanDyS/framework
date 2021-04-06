@@ -9,5 +9,10 @@ class Login extends UserBase
     {
         parent::__construct($table);
     }
+
+    public function login()
+    {
+        
+    }
 }
 ?>

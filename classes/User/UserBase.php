@@ -8,8 +8,6 @@ class UserBase
 {
     protected $table;
     protected $database;
-    protected $userCredentials = [];
-    protected $userPwd;
     
     public function __construct($table)
     {
