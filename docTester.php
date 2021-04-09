@@ -1,14 +1,18 @@
 <?php
-	require_once "autoloader.php";
+
+use User\Login;
+
+require_once "autoloader.php";
 		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 		var_dump(Helper\Session::init());
-		$_SESSION["id"] = session_id();
-		var_dump($_SESSION["id"]);
-	if (isset($_GET["submit"]))
+	if (isset($_POST["submit"]))
 	{
-		$obj = new DataHandler\Recordset("test");
-		$obj->save();
+		$obj = new Login("test", false);
+		$obj->setField("b", "dd");
+		//$obj->setField("c", $_POST["c"]);
+		var_dump($obj->dataExists());
+		exit();
 	}
 ?>
 <!DOCTYPE html>
@@ -18,9 +22,9 @@
 </head>
 <body>
  <a href="test.php">test</a>
-	<form>
-		<input type="text" name="testVAR" id="asd"/>
-		<input type="text" name="b" id="test"/>
+	<form method="POST">
+		<input type="text" name="b" id="asd"/>
+		<input type="text" name="c" id="test"/>
 		<button name="submit" type="submit">submit</button>
 	</form>
 </body>

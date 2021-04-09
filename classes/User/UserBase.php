@@ -8,15 +8,16 @@ class UserBase
 {
     protected $table;
     protected $database;
+    protected $credentials = [];
     
-    public function __construct($table)
+    public function __construct($table, $forceHttps = true)
     {
         if (UrlAccessibility::getRequestMethod() === "GET")
         {
             exit('Forbidden to use $_GET as login request method!');
-        } else if (!UrlAccessibility::isHttps())
+        } else if (!UrlAccessibility::isHttps($forceHttps))
         {
-            exit('Cannot send request without an SSL key!');
+            exit('Cannot login without an HTTPS request!');
         } else
         {
             $this->table = $table;
@@ -28,11 +29,47 @@ class UserBase
     public function setField($key, $value)
     {
         $this->database->setField($key, $value, true);
+        
+        $this->credentials[$key] = $value;
     }
 
     public function getField($key)
     {
-        return $this->getField($key);
+        return $this->database->getField($key);
+    }
+
+    public function dataExists()
+    {
+        $whereClause = "";
+        $i = 0;
+
+        foreach ($this->credentials as $key => $value)
+        {
+            $i++;
+
+            if (count($this->credentials) == 1)
+            {
+                $whereClause .= "{$key} = ?";
+            } else
+            {
+                if (count($this->credentials) == $i)
+                {
+                    $whereClause .= "{$key} = ?";
+                } else
+                {
+                    $whereClause .= "{$key} = ? AND ";
+                }
+            }
+        }
+        
+        $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($this->credentials));
+
+        if (!empty($this->database->getField($this->database->getPrimaryKey())))
+        {
+            return true;
+        }
+        
+        return false;
     }
 }
 ?>
