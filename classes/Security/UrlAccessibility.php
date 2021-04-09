@@ -14,12 +14,8 @@ class UrlAccessibility
         {
             return true;
         }
-        
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') 
-        {
-            return true;
-        }
-        return false;
+
+        return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off';
     }
 }
 ?>
