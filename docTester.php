@@ -10,8 +10,10 @@ require_once "autoloader.php";
 	{
 		$obj = new Login("test", false);
 		$obj->setField("b", "dd");
-		//$obj->setField("c", $_POST["c"]);
-		var_dump($obj->dataExists());
+		$obj->setField("c", "zz");
+		var_dump($obj->dataExists("c"));
+		echo "<br/>";
+		var_dump($obj->dataExists("b"));
 		exit();
 	}
 ?>

@@ -38,21 +38,40 @@ class UserBase
         return $this->database->getField($key);
     }
 
-    public function dataExists()
+    protected function readParameters($keys)
+    {
+        $param = [];
+
+        for ($i = 0; $i < count($keys); $i++)
+        {
+            if (array_key_exists($keys[$i], $this->credentials))
+            {
+                $param[$keys[$i]] = $this->credentials[$keys[$i]];
+            } else
+            {
+                exit("The key <b>{$keys[$i]}</b> is not set!");
+            }
+        }
+        return $param;
+    }
+
+    public function dataExists(...$keys)
     {
         $whereClause = "";
         $i = 0;
 
-        foreach ($this->credentials as $key => $value)
+        $param = $this->readParameters($keys);
+
+        foreach ($param as $key => $value)
         {
             $i++;
 
-            if (count($this->credentials) == 1)
+            if (count($param) == 1)
             {
                 $whereClause .= "{$key} = ?";
             } else
             {
-                if (count($this->credentials) == $i)
+                if (count($param) == $i)
                 {
                     $whereClause .= "{$key} = ?";
                 } else
@@ -61,8 +80,8 @@ class UserBase
                 }
             }
         }
-        
-        $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($this->credentials));
+
+        $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($param));
 
         if (!empty($this->database->getField($this->database->getPrimaryKey())))
         {
