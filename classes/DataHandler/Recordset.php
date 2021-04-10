@@ -99,7 +99,11 @@
 			*/
 			$action = "saveBy".$this->getRequestMethod();
 
-			$this->$action();
+			/**
+			 * when save is called, it either returns TRUE or FALSE. The programmer can catch this and check whether the query was successfully done, or whether
+			 * he should check for possible errors.
+			 */
+			return $this->$action();
 
 		}
 
@@ -107,7 +111,6 @@
 		{
 			return $_SERVER['REQUEST_METHOD'];
 		}
-
 
 		/*
 		* if $_POST is not empty, start looping through it to assign keys and values to write to database
@@ -1429,15 +1432,11 @@
 		public function next()
 		{
 			$this->index = $this->index + 1;
-
-			return $this->index;
 		}
 
 		public function previous()
 		{
 			$this->index = $this->index - 1;
-
-			return $this->index;
 		}
 
 		public function setIndex()
@@ -1445,8 +1444,6 @@
 			if ($this->index === -1)
 			{
 				$this->index = 0;
-
-				return $this->index;
 			}
 		}
 
