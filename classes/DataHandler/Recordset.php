@@ -3,7 +3,10 @@
 	use DatabaseConnection\Connection;
 	use \Files;
 	use \Exception;
-	/*
+	use \Security;
+use Security\UrlAccessibility;
+
+/*
 	*Recordset is the database class, which will do the CRUD for you
 	* DELETE
 	* UPDATE
@@ -97,7 +100,7 @@
 			* NOTICE: Send an argument along to save, to fetch both GET and POST.
 			* Send a hierarchy argument along, to decide which one should overwrite
 			*/
-			$action = "saveBy".$this->getRequestMethod();
+			$action = "saveBy".UrlAccessibility::getRequestMethod();
 
 			/**
 			 * when save is called, it either returns TRUE or FALSE. The programmer can catch this and check whether the query was successfully done, or whether
@@ -105,11 +108,6 @@
 			 */
 			return $this->$action();
 
-		}
-
-		public function getRequestMethod()
-		{
-			return $_SERVER['REQUEST_METHOD'];
 		}
 
 		public function clearCache($index)
