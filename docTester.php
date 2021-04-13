@@ -5,15 +5,16 @@ use User\Login;
 require_once "autoloader.php";
 		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
-		var_dump(Helper\Session::init());
+		$i = 0;
 	if (isset($_POST["submit"]))
 	{
+		//$obj = new DataHandler\Recordset("test", false);
 		$obj = new Login("test", false);
-		$obj->setField("b", "dd");
+		$obj->setField("b", "a");
 		$obj->setField("c", "zz");
-		var_dump($obj->dataExists("c"));
-		echo "<br/>";
 		var_dump($obj->dataExists("b"));
+		echo "<br/>";
+		var_dump($obj->dataExists("c"));
 		exit();
 	}
 ?>

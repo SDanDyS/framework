@@ -112,6 +112,28 @@
 			return $_SERVER['REQUEST_METHOD'];
 		}
 
+		public function clearCache($index)
+		{
+			//LOOP THROUGH THE ARRAY AND KEEP COUNT ONCE
+			//THIS PREVENTS OVERHEAD AND OPTIMIZES THE METHOD
+			$sizeOfArray = count($this->rowArray);
+
+			if ($index < $sizeOfArray - 1)
+			{
+				//OVERWRITE THE INDEX WITH THE NEXT ENTRY AND THUS EMULATE UNSET
+				for ($i = $index, $j = $index + 1; $j < $sizeOfArray; $i++, $j++)
+				{
+					$this->rowArray[$i] = $this->rowArray[$j];
+				}
+
+				//UNSET LAST KEY, HAS BEEN SHIFTED TO (LAST KEY - 1)
+				unset($this->rowArray[array_key_last($this->rowArray)]);
+			} else
+			{
+				unset($this->rowArray[$index]);
+			}
+		}
+
 		/*
 		* if $_POST is not empty, start looping through it to assign keys and values to write to database
 		*/
@@ -1054,9 +1076,9 @@
 				* Set all the type arguments to string
 				* This is done, because type jugling at the time of writing could not be done by the developer
 				*/
-				$selectQuery->bind_param("s", $uniqueSelector);
-
 				$uniqueSelector = $this->getField($uniqueID);
+				
+				$selectQuery->bind_param("s", $uniqueSelector);
 
 				$selectQuery->execute();
 
@@ -1457,8 +1479,6 @@
 			if ($this->index > -1)
 			{
 				$this->index = -1;
-
-				return $this->index;
 			}
 		}
 

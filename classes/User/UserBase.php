@@ -81,13 +81,27 @@ class UserBase
             }
         }
 
+        //SET INDEX TO 0 AND THEN SHIFT TO 1
+        //THE FIRST ENTRY (1) WILL RETURN WHETHER USER ALREADY EXISTS OR NOT
+        $this->database->setIndex();
+        $this->database->next();
+
         $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($param));
+
+        //PREPARE WILL CAUSE THE INDEX TO RESET AFTER ITS FINISHED
+        //FORCE THE INDEX BACK TO 1
+        $this->database->setIndex();
+        $this->database->next();
 
         if (!empty($this->database->getField($this->database->getPrimaryKey())))
         {
+            $this->database->clearCache(1);
+            $this->database->resetIndex();
             return true;
         }
-        
+
+        $this->database->clearCache(1);
+        $this->database->resetIndex();
         return false;
     }
 }
