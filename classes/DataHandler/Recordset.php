@@ -28,6 +28,8 @@ use Security\UrlAccessibility;
 
 		private $rowArray = [];
 
+		private $filePaths = [];
+
 		private $fieldCatcher = [];
 
 		private $index = -1;
@@ -819,9 +821,7 @@ use Security\UrlAccessibility;
 
 										$this->setField($fileName, $databasePath);
 
-										move_uploaded_file($tmpName, $completePath);
-
-										Files\FilesController::chmod($completePath, Files\FilesController::getFilePermission());
+										$this->filePaths[$tmpName] = $completePath;
 									}
 								} else
 								{
@@ -1094,6 +1094,17 @@ use Security\UrlAccessibility;
 			}
 		}
 
+		private function moveUploadedFiles()
+		{
+			foreach ($this->filePaths as $tmp_name => $destination)
+			{
+				move_uploaded_file($tmp_name, $destination);
+
+				Files\FilesController::chmod($destination, Files\FilesController::getFilePermission());
+			}
+			$this->filePaths = [];
+		}
+
 		private function insertQuery()
 		{
 			/*
@@ -1200,6 +1211,11 @@ use Security\UrlAccessibility;
 			* Reset $this->index, so during fetch time $this->index starts at 0.
 			*/
 			$this->resetIndex();
+
+			/**
+			 * images have been set with their respective paths, now move them to the correct destination
+			 */
+			$this->moveUploadedFiles();
 		}
 
 		private function updateQuery()
@@ -1292,6 +1308,11 @@ use Security\UrlAccessibility;
 			* Reset $this->index, so during fetch time $this->index starts at 0.
 			*/
 			$this->resetIndex();
+
+			/**
+			 * images have been set with their respective paths, now move them to the correct destination
+			 */
+			$this->moveUploadedFiles();
 		}
 
 		/*
