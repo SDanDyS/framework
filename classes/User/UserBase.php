@@ -4,7 +4,7 @@ use Helper\Session;
 use Security\UrlAccessibility;
 use DataHandler\Recordset;
 
-class UserBase
+abstract class UserBase
 {
     protected $table;
     protected $database;
@@ -14,10 +14,10 @@ class UserBase
     {
         if (UrlAccessibility::getRequestMethod() === "GET")
         {
-            exit('Forbidden to use $_GET as login request method!');
+            exit('Forbidden to use $_GET as request method!');
         } else if (!UrlAccessibility::isHttps($forceHttps))
         {
-            exit('Cannot login without an HTTPS request!');
+            exit('Cannot proceed without an HTTPS request!');
         } else
         {
             $this->table = $table;

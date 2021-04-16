@@ -9,7 +9,5 @@ class Register extends UserBase
     {
         parent::__construct($table, $forceHttps);
     }
-
-    
 }
 ?>
