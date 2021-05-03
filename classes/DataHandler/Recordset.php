@@ -4,7 +4,7 @@
 	use \Files;
 	use \Exception;
 	use \Security;
-use Security\UrlAccessibility;
+	use Security\UrlAccessibility;
 
 /*
 	*Recordset is the database class, which will do the CRUD for you

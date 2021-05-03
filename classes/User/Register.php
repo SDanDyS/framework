@@ -9,5 +9,10 @@ class Register extends UserBase
     {
         parent::__construct($table, $forceHttps);
     }
+
+    public function save() 
+    {
+        $this->database->save();
+    }
 }
 ?>

@@ -9,10 +9,5 @@ class Login extends UserBase
     {
         parent::__construct($table, $forceHttps);
     }
-
-    public function login()
-    {
-        
-    }
 }
 ?>

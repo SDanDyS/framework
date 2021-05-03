@@ -1,7 +1,7 @@
 <?php
 namespace User;
 use Helper\Session;
-use Security\UrlAccessibility;
+use \Security;
 use DataHandler\Recordset;
 
 abstract class UserBase
@@ -9,13 +9,14 @@ abstract class UserBase
     protected $table;
     protected $database;
     protected $credentials = [];
+    protected static $hash;
     
     public function __construct($table, $forceHttps = true)
     {
-        if (UrlAccessibility::getRequestMethod() === "GET")
+        if (Security\UrlAccessibility::getRequestMethod() === "GET")
         {
             exit('Forbidden to use $_GET as request method!');
-        } else if (!UrlAccessibility::isHttps($forceHttps))
+        } else if (!Security\UrlAccessibility::isHttps($forceHttps))
         {
             exit('Cannot proceed without an HTTPS request!');
         } else
@@ -23,19 +24,41 @@ abstract class UserBase
             $this->table = $table;
 
             $this->database = new Recordset($table);
+
+            if (empty(self::$hash))
+            {
+                $this->setHash();
+            }
         }
     }
 
-    public function setField($key, $value)
+    public function setHash($hashMethod = PASSWORD_DEFAULT)
     {
-        $this->database->setField($key, $value, true);
-        
-        $this->credentials[$key] = $value;
+        self::$hash = new Security\Hash($hashMethod);
     }
 
-    public function getField($key)
+    public function setField($key, $value, $encrypt = false)
     {
-        return $this->database->getField($key);
+        if ($encrypt)
+        {
+            $this->database->setField($key, self::$hash->hash($value), true);
+            $this->credentials[$key] = $value;
+        } else
+        {
+            $this->database->setField($key, $value, true);
+            $this->credentials[$key] = $value;           
+        }
+    }
+
+    public function getField($key, $decrypt = false)
+    {
+        if (!$decrypt)
+        {
+            return $this->database->getField($key);
+        } else
+        {
+            return self::$hash->verify($this->credentials[$key], $this->database->getField($key));
+        }
     }
 
     protected function readParameters($keys)

@@ -19,9 +19,9 @@ require_once "autoloader.php";
 		Order Deny,Allow
 		Allow from all
 	</FilesMatch>', true);
-		$obj = new DataHandler\Recordset("test");
-		$obj::setImageObject($uploads);
-		$obj->save();
+		// $obj = new DataHandler\Recordset("test");
+		// $obj::setImageObject($uploads);
+		// $obj->save();
 		// $obj = new Login("test", false);
 		// $obj->setField("b", "a");
 		// $obj->setField("c", "zz");
@@ -29,7 +29,16 @@ require_once "autoloader.php";
 		// echo "<br/>";
 		// var_dump($obj->dataExists("c"));
 		// exit();
+		$obj = new User\Register("test", false);
+		$obj->setField("b", $_POST["b"]);
+		$obj->setField("c", "FIRED", true);
+		$obj->save();
 	}
+
+	// echo $_SERVER["DOCUMENT_ROOT"];
+	// echo "<br/>";
+	// echo __DIR__;
+	require_once "classes/System/FileSystem.php";
 ?>
 <!DOCTYPE html>
 <html>
@@ -40,7 +49,7 @@ require_once "autoloader.php";
  <a href="test.php">test</a>
 	<form method="POST" enctype="multipart/form-data">
 		<input type="text" name="b" id="asd"/>
-		<input type="file" name="c" id="test"/>
+		<!-- <input type="file" name="c" id="test"/> -->
 		<button name="submit" type="submit">submit</button>
 	</form>
 </body>
