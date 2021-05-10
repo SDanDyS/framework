@@ -50,15 +50,9 @@ abstract class UserBase
         }
     }
 
-    public function getField($key, $decrypt = false)
+    public function getField($key)
     {
-        if (!$decrypt)
-        {
-            return $this->database->getField($key);
-        } else
-        {
-            return self::$hash->verify($this->credentials[$key], $this->database->getField($key));
-        }
+        return $this->database->getField($key);
     }
 
     protected function readParameters($keys)

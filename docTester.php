@@ -1,11 +1,16 @@
 <?php
 
-use User\Login;
+use User\Authentication;
+use Helper\Session;
+use System\FileSystem;
 
 require_once "autoloader.php";
 		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 		$i = 0;
+	new FileSystem();
+	FileSystem::deleteDir("uploads");
+	exit();
 	if (isset($_POST["submit"]))
 	{
 		$uploads = new Files\FilesController;
@@ -33,6 +38,17 @@ require_once "autoloader.php";
 		$obj->setField("b", $_POST["b"]);
 		$obj->setField("c", "FIRED", true);
 		$obj->save();
+		
+		$ob = new User\Authentication("test", false);
+		$ob->setField("b", $_POST["b"]);
+		$_POST["c"] = "FIRED";
+		$ob->login();
+		if($ob->verify("c"))
+		{
+			$ob->confirm();
+		}
+		$ob->logout();
+		var_dump(Session::get("Auth"));
 	}
 
 	// echo $_SERVER["DOCUMENT_ROOT"];

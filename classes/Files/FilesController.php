@@ -249,6 +249,7 @@
 			}
 		}
 
+		//IMPLEMENTED, BUT DISCOURAGED TO USE. CREATES OVERHEAD
 		public static function delete($request)
 		{
 			unset($request);

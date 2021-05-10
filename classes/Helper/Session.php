@@ -2,17 +2,28 @@
 namespace Helper;
 class Session
 {
-    public static function sessionEnabled()
+
+    public static function set($key, $value)
+    {
+        $_SESSION[$key] = $value;
+    }
+
+    public static function get($key)
+    {
+        return $_SESSION[$key];
+    }
+    
+    public static function enabled()
     {
         if (session_status() === PHP_SESSION_DISABLED)
         {
-            exit("Sessions are disabled. Enable sessions.");
+            exit("Sessions are disabled.");
         }  
     }
 
-    public static function sessionDestroy()
+    public static function destroy()
     {
-        self::sessionEnabled();
+        self::enabled();
 
         if (session_status() === PHP_SESSION_ACTIVE)
         {
@@ -21,9 +32,9 @@ class Session
         }
     }
 
-    public static function init()
+    public static function start()
     {
-        self::sessionEnabled();
+        self::enabled();
 
         if (session_status() === PHP_SESSION_NONE)
         {
