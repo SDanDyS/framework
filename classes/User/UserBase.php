@@ -11,12 +11,12 @@ abstract class UserBase
     protected $credentials = [];
     protected static $hash;
     
-    public function __construct($table, $forceHttps = true)
+    public function __construct(string $table, bool $forceHttps = true)
     {
-        if (Security\UrlAccessibility::getRequestMethod() === "GET")
+        if (Security\Url::getRequestMethod() === "GET")
         {
             exit('Forbidden to use $_GET as request method!');
-        } else if (!Security\UrlAccessibility::isHttps($forceHttps))
+        } else if (!Security\Url::isHttps($forceHttps))
         {
             exit('Cannot proceed without an HTTPS request!');
         } else
@@ -32,12 +32,12 @@ abstract class UserBase
         }
     }
 
-    public function setHash($hashMethod = PASSWORD_DEFAULT)
+    public function setHash(mixed $hashMethod = PASSWORD_DEFAULT)
     {
         self::$hash = new Security\Hash($hashMethod);
     }
 
-    public function setField($key, $value, $encrypt = false)
+    public function setField(string $key, mixed $value, bool $encrypt = false)
     {
         if ($encrypt)
         {
@@ -50,12 +50,12 @@ abstract class UserBase
         }
     }
 
-    public function getField($key)
+    public function getField(string $key)
     {
         return $this->database->getField($key);
     }
 
-    protected function readParameters($keys)
+    protected function readParameters(array $keys)
     {
         $param = [];
 
@@ -98,15 +98,16 @@ abstract class UserBase
             }
         }
 
-        //SET INDEX TO 0 AND THEN SHIFT TO 1
-        //THE FIRST ENTRY (1) WILL RETURN WHETHER USER ALREADY EXISTS OR NOT
+        //FORCE THE INDEX BACK TO 1
+        //SET TO 0 AND THEN + 1
         $this->database->setIndex();
         $this->database->next();
 
         $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($param));
 
-        //PREPARE WILL CAUSE THE INDEX TO RESET AFTER ITS FINISHED
+        //PREPARE WILL CAUSE THE INDEX TO RESET TO - 1 AFTER ITS FINISHED
         //FORCE THE INDEX BACK TO 1
+        //SET TO 0 AND THEN + 1
         $this->database->setIndex();
         $this->database->next();
 

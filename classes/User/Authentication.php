@@ -6,7 +6,7 @@ use Helper\Session;
 
 class Authentication extends UserBase
 {
-    public function __construct($table, $forceHttps = true)
+    public function __construct(string $table, bool $forceHttps = true)
     {
         parent::__construct($table, $forceHttps);
     }
@@ -38,7 +38,7 @@ class Authentication extends UserBase
         $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($this->credentials));
     }
 
-    public function verify($key, $differentInput = null)
+    public function verify(mixed $key, mixed $differentInput = null)
     {
         if (is_null($differentInput))
         {

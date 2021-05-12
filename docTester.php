@@ -9,8 +9,8 @@ require_once "autoloader.php";
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 		$i = 0;
 	new FileSystem();
-	FileSystem::deleteDir("uploads");
-	exit();
+	Session::start();
+	
 	if (isset($_POST["submit"]))
 	{
 		$uploads = new Files\FilesController;
@@ -34,27 +34,23 @@ require_once "autoloader.php";
 		// echo "<br/>";
 		// var_dump($obj->dataExists("c"));
 		// exit();
-		$obj = new User\Register("test", false);
-		$obj->setField("b", $_POST["b"]);
-		$obj->setField("c", "FIRED", true);
-		$obj->save();
+		// $obj = new User\Register("test", false);
+		// $obj->setField("b", $_POST["b"]);
+		// $obj->setField("c", "FIRED", true);
+		// $obj->save();
 		
-		$ob = new User\Authentication("test", false);
-		$ob->setField("b", $_POST["b"]);
-		$_POST["c"] = "FIRED";
-		$ob->login();
-		if($ob->verify("c"))
-		{
-			$ob->confirm();
-		}
-		$ob->logout();
-		var_dump(Session::get("Auth"));
+		// $ob = new User\Authentication("test", false);
+		// $ob->setField("b", $_POST["b"]);
+		// $_POST["c"] = "FIRED";
+		// $ob->login();
+		// if($ob->verify("c"))
+		// {
+		// 	$ob->confirm();
+		// }
+		// $ob->logout();
+		// var_dump(Session::get("Auth"));
+		Security\CSRF::validateToken();
 	}
-
-	// echo $_SERVER["DOCUMENT_ROOT"];
-	// echo "<br/>";
-	// echo __DIR__;
-	require_once "classes/System/FileSystem.php";
 ?>
 <!DOCTYPE html>
 <html>
@@ -66,6 +62,7 @@ require_once "autoloader.php";
 	<form method="POST" enctype="multipart/form-data">
 		<input type="text" name="b" id="asd"/>
 		<!-- <input type="file" name="c" id="test"/> -->
+		<input type="text" name="token" value=<?php echo Security\CSRF::generateToken(); ?>>
 		<button name="submit" type="submit">submit</button>
 	</form>
 </body>

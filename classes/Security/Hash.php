@@ -18,22 +18,22 @@ class Hash
 {
     private $specifiedHash;
 
-    public function __construct($hashType = PASSWORD_DEFAULT)
+    public function __construct(mixed $hashType = PASSWORD_DEFAULT)
     {
         $this->specifiedHash = $hashType;
     }
 
-    public function hash($data)
+    public function hash(mixed $data)
     {
         return password_hash($data, $this->specifiedHash);
     }
 
-    public function verify($exposedData, $hashedData)
+    public function verify(mixed $exposedData, mixed $hashedData)
     {
         return password_verify($exposedData, $hashedData);
     }
 
-    public function IsOldHash($hashedValue)
+    public function IsOldHash(mixed $hashedValue)
     {
         return password_needs_rehash($hashedValue, $this->specifiedHash);
     }

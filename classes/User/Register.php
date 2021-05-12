@@ -5,7 +5,7 @@ use Security\Hash;
 
 class Register extends UserBase
 {
-    public function __construct($table, $forceHttps = true)
+    public function __construct(string $table, bool $forceHttps = true)
     {
         parent::__construct($table, $forceHttps);
     }

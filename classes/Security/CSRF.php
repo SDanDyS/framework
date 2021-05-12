@@ -1,18 +1,21 @@
 <?php
     namespace Security;
     use Helper\Session;
-    class Token
+    use System\FileSystem;
+
+    class CSRF
     {
-        public static function generateCSRFToken() 
+        public static function generateToken()
         {
             Session::set("token", bin2hex(random_bytes(32)));
             return Session::get("token");
         }
     
-        public static function validCSRFToken()
+        public static function validateToken()
         {
             if (hash_equals(Session::get("token"), $_POST['token'])) 
             {
+                    Session::unset("token");
                     return true;
             } else 
             {

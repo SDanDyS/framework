@@ -3,14 +3,25 @@ namespace Helper;
 class Session
 {
 
-    public static function set($key, $value)
+    public static function set(string $key, mixed $value)
     {
         $_SESSION[$key] = $value;
     }
 
-    public static function get($key)
+    public static function get(string $key)
     {
         return $_SESSION[$key];
+    }
+
+    public static function unset(string|null $key = null)
+    {
+        if (is_null($key))
+        {
+            unset($_SESSION);
+        } else
+        {
+            unset($_SESSION[$key]);
+        }
     }
     
     public static function enabled()
