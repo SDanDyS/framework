@@ -76,7 +76,7 @@
                 $location = $path;
             } else
             {
-                $location = self::$DOCUMENT_ROOT.$path;
+                $location = FileSystem::getUrlBase().$path;
             }
 
 			if(is_file($location))
@@ -92,31 +92,34 @@
                 $location = $path;
             } else
             {
-                $location = self::$DOCUMENT_ROOT.$path;
+                $location = FileSystem::getUrlBase().$path;
             }
 
-            // if (!is_dir($location)) 
-            // {
-            //     exit("$location must be a directory");
-            // }
-            if (substr($location, strlen($location) - 1, 1) != '/') {
-                $location .= '/';
-            }
-            $files = str_replace("\\\\", "", glob($location . '*', GLOB_MARK));
-            foreach ($files as $file) {
-                if (is_dir($file)) {
-                    self::deleteDir($file, true);
-                } else {
-                    unlink($file);
+            if (is_dir($location)) 
+            { 
+                $objects = scandir($location);
+
+                foreach ($objects as $object) 
+                { 
+                  if ($object != "." && $object != "..") 
+                  { 
+                    if (is_dir($location.DIRECTORY_SEPARATOR.$object) && !is_link($location.DIRECTORY_SEPARATOR.$object))
+                    {
+                        self::deleteDir($location.DIRECTORY_SEPARATOR.$object, true);
+                    } else
+                    {
+                        unlink($location.DIRECTORY_SEPARATOR.$object); 
+                    }
+                  }
                 }
+                rmdir($location); 
+              } 
             }
-            rmdir($location);
-		}
     }
 
     echo $_SERVER["DOCUMENT_ROOT"];
 	echo "<br/>";
     new FileSystem();
-	echo FileSystem::getUrlBase("uploads");
+	echo FileSystem::getUrlBase();
     
 ?>

@@ -4,7 +4,7 @@
 	use \Files;
 	use \Exception;
 	use \Security;
-	use Security\UrlAccessibility;
+	use Security\Url;
 
 /*
 	*Recordset is the database class, which will do the CRUD for you
@@ -102,7 +102,7 @@
 			* NOTICE: Send an argument along to save, to fetch both GET and POST.
 			* Send a hierarchy argument along, to decide which one should overwrite
 			*/
-			$action = "saveBy".UrlAccessibility::getRequestMethod();
+			$action = "saveBy".Url::getRequestMethod();
 
 			/**
 			 * when save is called, it either returns TRUE or FALSE. The programmer can catch this and check whether the query was successfully done, or whether
