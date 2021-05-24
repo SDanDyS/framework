@@ -5,13 +5,13 @@
 
     class CSRF
     {
-        public static function generateToken()
+        public static function generateToken() : string
         {
             Session::set("token", bin2hex(random_bytes(32)));
             return Session::get("token");
         }
     
-        public static function validateToken()
+        public static function validateToken() : bool
         {
             if (hash_equals(Session::get("token"), $_POST['token'])) 
             {

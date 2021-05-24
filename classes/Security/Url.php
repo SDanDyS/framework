@@ -2,12 +2,12 @@
     namespace Security;
     class Url
     {
-        public static function getRequestMethod()
+        public static function getRequestMethod() : string
         {
             return $_SERVER["REQUEST_METHOD"];
         }
 
-        public static function isHttps(bool $securityThreat)
+        public static function isHttps(bool $securityThreat) : bool
         {
             if (!$securityThreat)
             {

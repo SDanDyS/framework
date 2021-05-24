@@ -11,7 +11,7 @@ class Authentication extends UserBase
         parent::__construct($table, $forceHttps);
     }
 
-    public function login()
+    public function login() : void
     {
         $whereClause = "";
         $i = 0;
@@ -38,7 +38,7 @@ class Authentication extends UserBase
         $this->database->prepare("SELECT * FROM `{$this->table}` WHERE {$whereClause}", ...array_values($this->credentials));
     }
 
-    public function verify(mixed $key, mixed $differentInput = null)
+    public function verify(mixed $key, mixed $differentInput = null) : bool
     {
         if (is_null($differentInput))
         {
@@ -71,13 +71,13 @@ class Authentication extends UserBase
         }
     }
 
-    public function confirm()
+    public function confirm() : void
     {
         Session::start();
         Session::set("Auth", $this);
     }
 
-    public function logout()
+    public function logout() : void
     {
         Session::destroy();
     }

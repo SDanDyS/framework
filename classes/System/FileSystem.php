@@ -4,15 +4,13 @@
     {
         private static $DOCUMENT_ROOT;
         private static $filePermission = 0777;
-        private static $filePath = null;
-        private static $dirPath = null;
 
         public function __construct()
         {
             self::documentRoot();
         }
 
-        private static function documentRoot()
+        private static function documentRoot() : void
         {
 			$base = $_SERVER['DOCUMENT_ROOT'];
             $differental = __DIR__;
@@ -30,7 +28,7 @@
             }
         }
 
-		public static function getUrlBase(string $path = NULL)
+		public static function getUrlBase(string $path = NULL) : string
 		{
 
 			if (is_null($path))
@@ -41,7 +39,7 @@
 			return self::$DOCUMENT_ROOT.$path;
 		}
 
-        public static function writeFile(string $path, mixed $msg = "", bool $overwrite = false)
+        public static function writeFile(string $path, mixed $msg = "", bool $overwrite = false) : void
         {
             //order deny,allow
             //deny from all
@@ -68,18 +66,17 @@
             }
         }
 
-        public static function mkdir(string $path, int $mode = 0777, bool $recursive = false)
+        public static function mkdir(string $path, int $mode = 0777, bool $recursive = false) : bool
         {
             if (!is_dir($path))
             {
-                if (!mkdir($path, $mode, $recursive)) 
-                {
-                    exit("Failed to create directory...");
-                }
+                return mkdir($path, $mode, $recursive);
             }
+
+            return false;
         }
 
-        public static function getFileContent(string $path)
+        public static function getFileContent(string $path) : string
         {
             return file_get_contents($path);
         }
@@ -95,34 +92,34 @@
 		* Read and writeable only would be: 2 + 4 = 6.
 		* End result: 0600
 		*/
-        public static function chmod(string $path, int $mode)
+        public static function chmod(string $path, int $mode) : void
 		{
 			chmod($path, $mode);
 		}
 
-		public static function setConstantFilePermission(int $mode)
+		public static function setConstantFilePermission(int $mode) : void
 		{
 			self::$filePermission = $mode;
 		}
 
-        public static function getConstantFilePermission()
+        public static function getConstantFilePermission() : int
 		{
 			return self::$filePermission;
 		}
 
-        public static function fileperms(string $permissionOfFile)
+        public static function fileperms(string $permissionOfFile) : int
 		{
             //CONVERT TO OCTAL NUMBER. EASIER TO READ FOR USER
 			return substr(sprintf('%o', fileperms($permissionOfFile)), -4);
 		}
 
         //IMPLEMENTED, BUT DISCOURAGED TO USE. CREATES OVERHEAD
-		public static function delete(mixed &$request)
+		public static function delete(mixed &$request) : void
 		{
 			unset($request);
 		}
 
-        public static function deleteFile(string $path, bool $customPath = false)
+        public static function deleteFile(string $path, bool $customPath = false) : bool
 		{
             if ($customPath)
             {
@@ -134,11 +131,13 @@
 
 			if(is_file($location))
 			{
-				unlink($location);
+				return unlink($location);
 			}
+
+            return false;
 		}
 
-        public static function deleteDir(string $path, bool $customPath = false)
+        public static function deleteDir(string $path, bool $customPath = false) : bool
         {
             if ($customPath)
             {
@@ -165,8 +164,10 @@
                         }
                     }
                 }
-                rmdir($location); 
-            } 
+                return rmdir($location);
+            }
+
+            return false;
         }
     }
 ?>

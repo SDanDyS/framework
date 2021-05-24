@@ -32,12 +32,12 @@ abstract class UserBase
         }
     }
 
-    public function setHash(mixed $hashMethod = PASSWORD_DEFAULT)
+    public function setHash(mixed $hashMethod = PASSWORD_DEFAULT) : void
     {
         self::$hash = new Security\Hash($hashMethod);
     }
 
-    public function setField(string $key, mixed $value, bool $encrypt = false)
+    final public function setField(string $key, mixed $value, bool $encrypt = false) : void
     {
         if ($encrypt)
         {
@@ -50,12 +50,12 @@ abstract class UserBase
         }
     }
 
-    public function getField(string $key)
+    final public function getField(string $key) : mixed
     {
         return $this->database->getField($key);
     }
 
-    protected function readParameters(array $keys)
+    protected function readParameters(array $keys) : array
     {
         $param = [];
 
@@ -72,7 +72,7 @@ abstract class UserBase
         return $param;
     }
 
-    public function dataExists(...$keys)
+    public function dataExists(mixed ...$keys) : bool
     {
         $whereClause = "";
         $i = 0;
