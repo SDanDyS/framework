@@ -2,6 +2,7 @@
 	namespace DataHandler;
 	use DatabaseConnection\Connection;
 	use \Files;
+	use \System;
 	use \Exception;
 	use \Security;
 	use Security\Url;
@@ -173,14 +174,7 @@
 				}
 				$this->setImages();
 
-				if (count($this->response) > 0)
-				{
-					return FALSE;
-				} else
-				{
-					$this->executeQuery();
-					return TRUE;
-				}
+				return $this->getResponse();
 			}
 		}
 
@@ -225,14 +219,19 @@
 
 				$this->setImages();
 
-				if (count($this->response) > 0)
-				{
-					return FALSE;
-				} else
-				{
-					$this->executeQuery();
-					return TRUE;
-				}
+				return $this->getResponse();
+			}
+		}
+
+		public function getResponse()
+		{
+			if (count($this->response) > 0)
+			{
+				return FALSE;
+			} else
+			{
+				$this->executeQuery();
+				return TRUE;
 			}
 		}
 
@@ -810,12 +809,11 @@
 											break;
 										}
 
+										// PATHTRIMMER WILL ALSO BE USED TO TRIM THE PATH FOR DATABASE INSERTION
+										// IT ALSO CREATES THE ABSOLUTE PATH FOR THE FILE
+										$pathTrimmer = System\FileSystem::getAppRoot();
 
-										$filePath = $image->getParams("path");
-
-										$completePath = "{$filePath}/{$name}.{$fileExtension}";
-
-										$pathTrimmer = Files\FilesController::getBaseDir();
+										$completePath = System\FileSystem::getAppRoot("{$name}.{$fileExtension}");
 
 										$databasePath = str_replace($pathTrimmer, "", $completePath);
 
@@ -1100,7 +1098,7 @@
 			{
 				move_uploaded_file($tmp_name, $destination);
 
-				Files\FilesController::chmod($destination, Files\FilesController::getFilePermission());
+				System\FileSystem::chmod($destination, System\FileSystem::getConstantFilePermission());
 			}
 			$this->filePaths = [];
 		}

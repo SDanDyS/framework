@@ -2,15 +2,19 @@
     namespace System;
     class FileSystem
     {
-        private static $DOCUMENT_ROOT;
+        private static $APP_ROOT;
+        private static $DOC_ROOT;
         private static $filePermission = 0777;
+        const APPLICATION_ROOT = "APP_ROOT";
+        const DOCUMENT_ROOT = "DOC_ROOT";
 
         public function __construct()
         {
-            self::documentRoot();
+            self::setAppRoot();
+            self::$DOC_ROOT = $_SERVER['DOCUMENT_ROOT'];
         }
 
-        private static function documentRoot() : void
+        private static function setAppRoot() : void
         {
 			$base = $_SERVER['DOCUMENT_ROOT'];
             $differental = __DIR__;
@@ -20,24 +24,29 @@
 
             $totalCount = count($explodedBase) + 1;
 
-            self::$DOCUMENT_ROOT = "";
+            self::$APP_ROOT = "";
 
             for ($i = 0; $i < $totalCount; $i++)
             {
-                self::$DOCUMENT_ROOT .= "{$explodedDifferental[$i]}/";
+                self::$APP_ROOT .= "{$explodedDifferental[$i]}/";
             }
         }
 
-		public static function getUrlBase(string $path = NULL) : string
+		public static function getAppRoot(string $path = NULL) : string
 		{
 
 			if (is_null($path))
 			{
-				return self::$DOCUMENT_ROOT;
+				return self::$APP_ROOT;
 			}
 
-			return self::$DOCUMENT_ROOT.$path;
+			return self::$APP_ROOT.$path;
 		}
+
+        public static function getDocumentRoot()
+        {
+            return self::$DOC_ROOT;
+        }
 
         public static function writeFile(string $path, mixed $msg = "", bool $overwrite = false) : void
         {
@@ -126,7 +135,7 @@
                 $location = $path;
             } else
             {
-                $location = FileSystem::getUrlBase().$path;
+                $location = FileSystem::getAppRoot().$path;
             }
 
 			if(is_file($location))
@@ -144,7 +153,7 @@
                 $location = $path;
             } else
             {
-                $location = FileSystem::getUrlBase().$path;
+                $location = FileSystem::getAppRoot().$path;
             }
 
             if (is_dir($location)) 

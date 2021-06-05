@@ -141,3 +141,43 @@ function setImageCreator(realInput, userInput)
 		});		
 	}
 }
+
+//SOME FUCKING FUNCTION FOR MY JOKES
+function findInOrderSuccessor(arr) {
+
+	//OPTIONAL, KIND OF OVERKILL. IN CASE ARRAY IS EMPTY
+	if (arr.length === 0) {
+		return null;
+	}
+
+	let input = arr.pop();
+
+	if (arr.length === 0) {
+		return input;
+	}
+
+	let compareAgainstInput = arr.pop();
+	
+	if (input > compareAgainstInput) {
+		array.unshift(input);
+
+		var val = findInOrderSuccessor(arr);
+	}
+
+	if (input < compareAgainstInput) {
+		let comp = findInOrderSuccessor(array.unshift(input));
+
+		if (compareAgainstInput < comp) {
+			return compareAgainstInput;
+		} else if (compareAgainstInput > comp) {
+			return comp;
+		} else {
+			return compareAgainstInput;
+		}
+	}
+
+	if (val === input) {
+		return null;
+	}
+	return val;
+}
