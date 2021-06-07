@@ -37,11 +37,11 @@
 
 		private $conn;
 
+		private $image;
+
 		private static $allowedExtensions;
 
 		private static $nameDistortion;
-
-		private static $image;
 
 		private static $allowedImageSize;
 
@@ -640,9 +640,9 @@
 		/*
 		* Once the image path has been created by the FilesController object, the developer can pass it along to Recordset as target
 		*/
-		public static function setImageObject($object)
+		public function setImageObject($object)
 		{
-			self::$image = $object;
+			$this->image = $object;
 		}
 
 		/*
@@ -705,7 +705,7 @@
             }
 			if (count($_FILES) > 0)
 			{
-				$image = self::$image;
+				$image = $this->image;
 				if (!is_object($image) || is_null($image) || empty($image))
 				{
 					return;
@@ -784,43 +784,34 @@
 										continue;
 									}
 
-									if (empty($image->getParams("path")))
+									switch (self::$nameDistortion)
 									{
-										$this->getErrorMsg(__METHOD__."<br/> The given path does not exist <br/> Given path: ".$image->getParams("path")."<br/>", TRUE);
-									} else
-									{
-										if(!is_dir($image->getParams("path")))
-										{
-											$this->getErrorMsg(__METHOD__."<br/> The given path is not a directory <br/> Given path: ".$image->getParams("path")."<br/>", TRUE);
-										}
+										case TRUE:
+											$name = uniqid("", true);
+										break;
 
-										switch (self::$nameDistortion)
-										{
-											case TRUE:
-												$name = uniqid("", true);
-											break;
+										case FALSE:
+											$name = $name;
+										break;
 
-											case FALSE:
-												$name = $name;
-											break;
-
-											default:
-												$name = $name;
-											break;
-										}
-
-										// PATHTRIMMER WILL ALSO BE USED TO TRIM THE PATH FOR DATABASE INSERTION
-										// IT ALSO CREATES THE ABSOLUTE PATH FOR THE FILE
-										$pathTrimmer = System\FileSystem::getAppRoot();
-
-										$completePath = System\FileSystem::getAppRoot("{$name}.{$fileExtension}");
-
-										$databasePath = str_replace($pathTrimmer, "", $completePath);
-
-										$this->setField($fileName, $databasePath);
-
-										$this->filePaths[$tmpName] = $completePath;
+										default:
+											$name = $name;
+										break;
 									}
+
+									// PATHTRIMMER WILL ALSO BE USED TO TRIM THE PATH FOR DATABASE INSERTION
+									// IT ALSO CREATES THE ABSOLUTE PATH FOR THE FILE
+									// $pathTrimmer = System\FileSystem::getAppRoot();
+
+									// $completePath = System\FileSystem::getAppRoot("{$name}.{$fileExtension}");
+									$a = $image->getTargetRoot();
+									$path = $image->getUploadsDirectory()."{$name}.{$fileExtension}";
+									$completePath = $a.$path;
+									#$databasePath = str_replace($pathTrimmer, "", $completePath);
+
+									$this->setField($fileName, $completePath);
+
+									$this->filePaths[$tmpName] = $completePath;
 								} else
 								{
 									$this->getErrorMsg(__METHOD__."<br/> The set MIME type is not allowed. <br/>");
@@ -1098,7 +1089,7 @@
 			{
 				move_uploaded_file($tmp_name, $destination);
 
-				System\FileSystem::chmod($destination, System\FileSystem::getConstantFilePermission());
+				System\FileSystem::chmod($destination, $this->image->getConstantFilePermission());
 			}
 			$this->filePaths = [];
 		}

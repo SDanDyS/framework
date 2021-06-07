@@ -5,17 +5,20 @@ use User\Authentication;
 use Helper\Session;
 use System\FileSystem;
 
-require_once "autoloader.php";
+		require_once "autoloader.php";
 		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 		$i = 0;
-	new FileSystem();
+	$t = new FileSystem();
+	$t->setAppRoot();
+	$t->setDocumentRoot();
+	$t->setUploadsDirectory("uploads");
 	Session::start();
 	
 	if (isset($_POST["submit"]))
 	{
 		$obj = new Recordset("test");
-		$obj::setImageObject(new FileSystem());
+		$obj->setImageObject($t);
 		$obj->save();
 		exit();
 	}

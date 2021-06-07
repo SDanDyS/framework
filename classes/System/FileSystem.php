@@ -1,20 +1,60 @@
 <?php
     namespace System;
-    class FileSystem
-    {
-        private static $APP_ROOT;
-        private static $DOC_ROOT;
-        private static $filePermission = 0777;
-        const APPLICATION_ROOT = "APP_ROOT";
-        const DOCUMENT_ROOT = "DOC_ROOT";
 
-        public function __construct()
+use Directory;
+
+class FileSystem
+    {
+        // REPLICATE CONSTANTS
+        private static array $ROOT = [
+            "APP_ROOT" => "",
+            "DOCUMENT_ROOT" => ""
+        ];
+        private string $targetDirectory;
+        private string $uploadsDirectory;
+        private int $filePermission = 0777;
+
+        public function __construct(string $targetRoot = "APP_ROOT", int $filePermission = 0777)
         {
-            self::setAppRoot();
-            self::$DOC_ROOT = $_SERVER['DOCUMENT_ROOT'];
+            $this->targetDirectory = $targetRoot;
+            $this->filePermission = $filePermission;
         }
 
-        private static function setAppRoot() : void
+        public function setUploadsDirectory(string $directoryName, bool $strict = false) : void
+        {
+            if (!is_dir(self::$ROOT[$this->targetDirectory].$directoryName) && $strict)
+            {
+                exit("Could not find directory named: {$directoryName}. <br/> Root: {$this->targetDirectory}. <br/> Did you make the directory?");
+            }
+
+            if(self::mkdir(self::$ROOT[$this->targetDirectory].$directoryName))
+            {
+                $this->uploadsDirectory = "{$directoryName}/";
+            }
+            //FIX THIS, OR ELSE IT WON'T TARGET DIRECTORY. RIGHT NOW IT ONLY TARGETS WHEN MKDIR FIRES
+            $this->uploadsDirectory = "{$directoryName}/";
+        }
+
+        public function getUploadsDirectory() : string
+        {
+            if (empty($this->uploadsDirectory))
+            {
+                return "";
+            }
+            return $this->uploadsDirectory;
+        }
+
+        public function getTargetRoot() : string
+        {
+            return self::$ROOT[$this->targetDirectory];
+        }
+
+        public static function setDocumentRoot() : void
+        {
+            self::$ROOT["DOC_ROOT"] = $_SERVER['DOCUMENT_ROOT']."/";
+        }
+
+        public static function setAppRoot() : void
         {
 			$base = $_SERVER['DOCUMENT_ROOT'];
             $differental = __DIR__;
@@ -24,28 +64,42 @@
 
             $totalCount = count($explodedBase) + 1;
 
-            self::$APP_ROOT = "";
+            self::$ROOT["APP_ROOT"] = "";
 
             for ($i = 0; $i < $totalCount; $i++)
             {
-                self::$APP_ROOT .= "{$explodedDifferental[$i]}/";
+                self::$ROOT["APP_ROOT"] .= "{$explodedDifferental[$i]}/";
             }
         }
 
 		public static function getAppRoot(string $path = NULL) : string
 		{
+            if (empty(self::$ROOT["APP_ROOT"]))
+            {
+                exit("Set the APPLICATION ROOT by calling the method <b>setAppRoot</b> prior to using <b>getAppRoot</b>");
+            }
 
 			if (is_null($path))
 			{
-				return self::$APP_ROOT;
+				return self::$ROOT["APP_ROOT"];
 			}
 
-			return self::$APP_ROOT.$path;
+			return self::$ROOT["APP_ROOT"].$path;
 		}
 
-        public static function getDocumentRoot()
+        public static function getDocumentRoot(string $path = NULL) : string
         {
-            return self::$DOC_ROOT;
+            if (empty(self::$ROOT["DOC_ROOT"]))
+            {
+                exit("Set the DOCUMENT ROOT by calling the method <b>setDocumentRoot</b> prior to using <b>getDocumentRoot</b>");
+            }
+
+            if (is_null($path))
+			{
+				return self::$ROOT["DOC_ROOT"];
+			}
+
+			return self::$ROOT["DOC_ROOT"].$path;
         }
 
         public static function writeFile(string $path, mixed $msg = "", bool $overwrite = false) : void
@@ -106,14 +160,14 @@
 			chmod($path, $mode);
 		}
 
-		public static function setConstantFilePermission(int $mode) : void
+		public function setConstantFilePermission(int $mode) : void
 		{
-			self::$filePermission = $mode;
+			$this->filePermission = $mode;
 		}
 
-        public static function getConstantFilePermission() : int
+        public function getConstantFilePermission() : int
 		{
-			return self::$filePermission;
+			return $this->filePermission;
 		}
 
         public static function fileperms(string $permissionOfFile) : int

@@ -3,8 +3,8 @@
     class Input
     {
 
-        private $errors = [];
-        private $method;
+        private array|string $errors = [];
+        private array $method;
 
         public function __construct()
         {

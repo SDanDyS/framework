@@ -16,7 +16,7 @@ use Helper\Session;
  */
 class Hash
 {
-    private $specifiedHash;
+    private string $specifiedHash;
 
     public function __construct(mixed $hashType = PASSWORD_DEFAULT)
     {

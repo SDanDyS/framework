@@ -6,10 +6,10 @@ use DataHandler\Recordset;
 
 abstract class UserBase
 {
-    protected $table;
-    protected $database;
-    protected $credentials = [];
-    protected static $hash;
+    protected string $table;
+    protected Recordset $database;
+    protected array $credentials = [];
+    protected static Security\Hash $hash;
     
     public function __construct(string $table, bool $forceHttps = true)
     {
