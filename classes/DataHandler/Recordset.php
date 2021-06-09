@@ -720,16 +720,22 @@
 
 				foreach($_FILES as $fileName => $singleFile)
 				{
-                    /*
-                     * Increment $i to keep count of the row which is being fetched by the database
-                     */
-                    $i++;
 
 					$name = $singleFile["name"];
 					$tmpName = $singleFile["tmp_name"];
 					$type = $singleFile["type"];
 					$size = $singleFile["size"];
 					$error = $singleFile["error"];
+
+					if (!$this->hasField($fileName, $this->row))
+					{
+						continue;
+					}
+
+                    /*
+                     * Increment $i to keep count of the row which is being fetched by the database
+                     */
+                    $i++;
 
 					/*
 					* Check whether name is empty
@@ -799,15 +805,9 @@
 										break;
 									}
 
-									// PATHTRIMMER WILL ALSO BE USED TO TRIM THE PATH FOR DATABASE INSERTION
-									// IT ALSO CREATES THE ABSOLUTE PATH FOR THE FILE
-									// $pathTrimmer = System\FileSystem::getAppRoot();
-
-									// $completePath = System\FileSystem::getAppRoot("{$name}.{$fileExtension}");
 									$a = $image->getTargetRoot();
 									$path = $image->getUploadsDirectory()."{$name}.{$fileExtension}";
 									$completePath = $a.$path;
-									#$databasePath = str_replace($pathTrimmer, "", $completePath);
 
 									$this->setField($fileName, $completePath);
 

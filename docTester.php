@@ -10,8 +10,8 @@ use System\FileSystem;
 		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
 		$i = 0;
 	$t = new FileSystem();
-	$t->setAppRoot();
-	$t->setDocumentRoot();
+	FileSystem::setAppRoot();
+	FileSystem::setDocumentRoot();
 	$t->setUploadsDirectory("uploads");
 	Session::start();
 	

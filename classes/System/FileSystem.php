@@ -27,9 +27,14 @@ class FileSystem
                 exit("Could not find directory named: {$directoryName}. <br/> Root: {$this->targetDirectory}. <br/> Did you make the directory?");
             }
 
-            if(self::mkdir(self::$ROOT[$this->targetDirectory].$directoryName))
+            self::mkdir(self::$ROOT[$this->targetDirectory].$directoryName);
+
+            if (is_dir(self::$ROOT[$this->targetDirectory].$directoryName))
             {
                 $this->uploadsDirectory = "{$directoryName}/";
+            } else
+            {
+                exit("Directory could not be made! <br/> Path: " .self::$ROOT[$this->targetDirectory].$directoryName);
             }
             //FIX THIS, OR ELSE IT WON'T TARGET DIRECTORY. RIGHT NOW IT ONLY TARGETS WHEN MKDIR FIRES
             $this->uploadsDirectory = "{$directoryName}/";
