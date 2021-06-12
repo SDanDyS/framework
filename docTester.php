@@ -27,14 +27,21 @@ use System\FileSystem;
 <html>
 <head>
 	<title>test</title>
+	<script src="js/ImageCreator.js"></script>
 </head>
 <body>
  <a href="test.php">test</a>
 	<form method="POST" enctype="multipart/form-data">
 		<!-- <input type="text" name="b" id="asd"/> -->
-		<input type="file" name="c" id="test"/>
+		<input type="file" name="c" id="test" multiple/>
 		<!-- <input type="text" name="token" value= -->
 		<button name="submit" type="submit">submit</button>
 	</form>
+	<img id="yes" src=""/>
+	<script>
+		new ImageCreator({
+			realInput: "c"
+		});
+	</script>
 </body>
 </html>
