@@ -5,37 +5,14 @@
 */
 class ImageCreator
 {
-	//_realInput, _userInput = undefined, 
 	constructor(startValues)
 	{
 		/*
 		* instantiate the required properties
 		*/
-		this._body = document.getElementsByTagName(`body`)[0];
-		this._divError = document.createElement(`div`);
-		this._divError.style.height = `100vh`;
-		this._divError.style.width = `100vw`;
-
+		this.createErrorElements();
 
 		this._startValues = startValues;
-
-		// if (startValues.hasOwnProperty(`userInput`)) {
-		// 	this._userInput = startValues[`userInput`];
-		// } else {
-		// 	this._userInput = null;
-		// }
-
-		// if (startValues.hasOwnProperty(`extension`)) {
-		// 	this.allowedExtension = startValues[`extension`];
-		// } else {
-		// 	this._extension = [];
-		// }
-
-		// if (startValues.hasOwnProperty(`distortion`)) {
-		// 	this.distortion = startValues[`distortion`];
-		// } else {
-		// 	this._distortion = false;
-		// }
 
 		this.hasOwnProperty({
 			"userInput": null,
@@ -53,14 +30,39 @@ class ImageCreator
 			if (realInput == undefined) {
 				throw `Could not find an input field with ID or name: ${startValues[`realInput`]}`;
 			}
-			this._realInput = startValues[`realInput`];
+
+
+
+
+			if (!startValues.hasOwnProperty(`appendToElement`) || startValues[`appendToElement`] === ``) {
+				throw `The following property hasn't been set: appendToElement`;
+			}
+
+			let appendToElement = document.getElementById(startValues[`appendToElement`]) || document.getElementsByName(startValues[`appendToElement`])[0];
+
+			if (appendToElement == undefined) {
+				throw `Could not find an element with ID or name: ${startValues[`appendToElement`]}`;
+			}
+
+			//based on name or ID the object element is retrieved and assigned
+			this._appendToElement = appendToElement;
+			this._realInput = realInput;
+
 		} catch (error) {
 			console.log(this._divError);
 			this._divError.innerHTML = error;
-			this._body.appendChild(this._divError)
+			this._body.appendChild(this._divError);
+			return;
 		}
 
 		this.activate();
+	}
+
+	createErrorElements() {
+		this._body = document.getElementsByTagName(`body`)[0];
+		this._divError = document.createElement(`div`);
+		this._divError.style.height = `100vh`;
+		this._divError.style.width = `100vw`;
 	}
 
 	hasOwnProperty(dynamicObject) {
@@ -144,43 +146,8 @@ class ImageCreator
 		}
 	}
 
-	input(realInput, userInput = undefined) {
-		console.log(realInput);
-		var userInputSelector = document.getElementById(userInput) || document.getElementsByName(userInput)[0] || userInput;
-		var realInputSelector = document.getElementById(realInput) || document.getElementsByName(realInput)[0] || realInput;
-		var $this = this;
-		/*
-		* Check whether the "fake" input is set
-		* If it has been set, use it as a replacement for the real input field
-		* and fire the click() event on the real input
-		* else use the real input as the input field to instantiate the file "uploader"
-		*/
-		if (userInputSelector != undefined) 
-		{
-			userInputSelector.addEventListener(`click`, function() {
-	
-				realInputSelector.click();
-	
-				realInputSelector.addEventListener(`change`, function() {
-					// $this EMULATES THE ACTUAL CLASS INSTANTIATION
-					// REFERING TO "THIS" IMMEDIATELY, WILL TARGET realInputSelector
-					$this.render(realInputSelector);
-				});
-				
-			});
-		} else
-		{
-			console.log(realInputSelector);
-			realInputSelector.addEventListener(`change`, function() {
-				$this.render(realInputSelector);
-			});		
-		}
-	}
-
-	activate()
-	{
-		var userInputSelector = document.getElementById(this._userInput) || document.getElementsByName(this._userInput)[0];
-		var realInputSelector = document.getElementById(this._realInput) || document.getElementsByName(this._realInput)[0];
+	input() {
+		let $this = this;
 		/*
 		* Check whether the "fake" input is set
 		* If it has been set, use it as a replacement for the real input field
@@ -189,12 +156,30 @@ class ImageCreator
 		*/
 		if (this._userInput != undefined) 
 		{
-			this.input(realInputSelector, userInputSelector);
+			this._userInput.addEventListener(`click`, function() {
+	
+				this._realInput.click();
+	
+				this._realInput.addEventListener(`change`, function() {
+					// $this EMULATES THE ACTUAL CLASS INSTANTIATION
+					// REFERING TO "THIS" IMMEDIATELY, WILL TARGET realInputSelector
+					$this.render(this._realInput);
+				});
+				
+			});
 		} else
 		{
-			console.log(realInputSelector);
-			this.input(realInputSelector);
+			console.log(this._realInput);
+			this._realInput.addEventListener(`change`, function() {
+				$this.render(this._realInput);
+			});		
 		}
+	}
+
+	activate()
+	{
+
+		this.input();
 	}
 
 	/*

@@ -38,9 +38,11 @@ use System\FileSystem;
 		<button name="submit" type="submit">submit</button>
 	</form>
 	<img id="yes" src=""/>
+	<div id="idorname"></div>
 	<script>
 		let test = new ImageCreator({
-			realInput: "c"
+			realInput: "c",
+			appendToElement: "idorname"
 		});
 		test.allowedExtension = ["jpg", "jpeg", "gif"];
 		console.log(test.allowedExtension);
