@@ -39,9 +39,11 @@ use System\FileSystem;
 	</form>
 	<img id="yes" src=""/>
 	<script>
-		new ImageCreator({
+		let test = new ImageCreator({
 			realInput: "c"
 		});
+		test.allowedExtension = ["jpg", "jpeg", "gif"];
+		console.log(test.allowedExtension);
 	</script>
 </body>
 </html>

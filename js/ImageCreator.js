@@ -37,29 +37,28 @@ class ImageCreator
 		// 	this._distortion = false;
 		// }
 
-		let t = {
-			"realInput": "yo"
-		};
 		this.hasOwnProperty({
-			"realInput": false
+			"userInput": null,
+			"extension": [],
+			"distortion": false
 		});
 
-		// try {
-		// 	if (!startValues.hasOwnProperty(`realInput`) || startValues[`realInput`] === ``) {
-		// 		throw `The following property hasn't been set: realInput`;
-		// 	}
+		try {
+			if (!startValues.hasOwnProperty(`realInput`) || startValues[`realInput`] === ``) {
+				throw `The following property hasn't been set: realInput`;
+			}
 
-		// 	let realInput = document.getElementById(startValues[`realInput`]) || document.getElementsByName(startValues[`realInput`])[0];
+			let realInput = document.getElementById(startValues[`realInput`]) || document.getElementsByName(startValues[`realInput`])[0];
 
-		// 	if (realInput == undefined) {
-		// 		throw `Could not find an input field with ID or name: ${startValues[`realInput`]}`;
-		// 	}
-		// 	this._realInput = startValues[`realInput`];
-		// } catch (error) {
-		// 	console.log(this._divError);
-		// 	this._divError.innerHTML = error;
-		// 	this._body.appendChild(this._divError)
-		// }
+			if (realInput == undefined) {
+				throw `Could not find an input field with ID or name: ${startValues[`realInput`]}`;
+			}
+			this._realInput = startValues[`realInput`];
+		} catch (error) {
+			console.log(this._divError);
+			this._divError.innerHTML = error;
+			this._body.appendChild(this._divError)
+		}
 
 		this.activate();
 	}
@@ -73,12 +72,13 @@ class ImageCreator
 
 			if ($this._startValues.hasOwnProperty(`${dynamicObjectKey}`)) {
 				console.log(property);
-				$this.property = $this._startValues[dynamicObjectKey];
+				$this[property] = $this._startValues[dynamicObjectKey];
+				console.log($this[property]);
 			} else {
-				$this.property = dynamicObject[dynamicObjectKey]
+				$this[property] = dynamicObject[dynamicObjectKey];
 			}
 		});
-
+		delete this._startValues;
 		console.log(this);
 	}
 
@@ -87,11 +87,17 @@ class ImageCreator
 	*/
 	set allowedExtension(extensions)
 	{
-		let allowedExtensions = extensions.split(",");
+		let allowedExtensionsArray;
 
-		for (let i = 0; i < allowedExtensions.length; i++) 
+		try {
+			allowedExtensionsArray = extensions.split(",");
+		} catch (error) {
+			allowedExtensionsArray = extensions;
+		}
+
+		for (let i = 0; i < allowedExtensionsArray.length; i++) 
 		{
-			this._extension.push(allowedExtensions[i]);
+			this._extension.push(allowedExtensionsArray[i]);
 		}		
 
 	}
@@ -108,7 +114,7 @@ class ImageCreator
 	}
 
 	/*
-	* if nameChanger is set to true, it will convert the names into numbers
+	* if distortion is set to true, it will convert the names into numbers
 	* this way injections will be stopped
 	* if however set to false, it'll use the default image name as name
 	*/
