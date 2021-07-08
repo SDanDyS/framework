@@ -16,6 +16,15 @@ class FileSystem
 
         public function __construct(string $targetRoot = "APP_ROOT", int $filePermission = 0777)
         {
+            /**
+             * One or more config settings have not been set
+             * Instantiate it, to prevent errors
+             */
+            if (empty(self::$ROOT["APP_ROOT"]) || empty(self::$ROOT["DOCUMENT_ROOT"]))
+            {
+                self::setAppRoot();
+                self::setDocumentRoot();
+            }
             $this->targetDirectory = $targetRoot;
             $this->filePermission = $filePermission;
         }
@@ -36,7 +45,6 @@ class FileSystem
             {
                 exit("Directory could not be made! <br/> Path: " .self::$ROOT[$this->targetDirectory].$directoryName);
             }
-            //FIX THIS, OR ELSE IT WON'T TARGET DIRECTORY. RIGHT NOW IT ONLY TARGETS WHEN MKDIR FIRES
             $this->uploadsDirectory = "{$directoryName}/";
         }
 
@@ -175,10 +183,10 @@ class FileSystem
 			return $this->filePermission;
 		}
 
-        public static function fileperms(string $permissionOfFile) : int
+        public static function fileperms(string $fileName) : int
 		{
             //CONVERT TO OCTAL NUMBER. EASIER TO READ FOR USER
-			return substr(sprintf('%o', fileperms($permissionOfFile)), -4);
+			return substr(sprintf('%o', fileperms($fileName)), -4);
 		}
 
         //IMPLEMENTED, BUT DISCOURAGED TO USE. CREATES OVERHEAD
@@ -187,33 +195,18 @@ class FileSystem
 			unset($request);
 		}
 
-        public static function deleteFile(string $path, bool $customPath = false) : bool
+        public static function deleteFile(string $path) : bool
 		{
-            if ($customPath)
-            {
-                $location = $path;
-            } else
-            {
-                $location = FileSystem::getAppRoot().$path;
-            }
 
-			if(is_file($location))
-			{
-				return unlink($location);
-			}
+            $location = $path;
 
-            return false;
+			return unlink($location);
 		}
 
-        public static function deleteDir(string $path, bool $customPath = false) : bool
+        public static function deleteDir(string $path) : bool
         {
-            if ($customPath)
-            {
-                $location = $path;
-            } else
-            {
-                $location = FileSystem::getAppRoot().$path;
-            }
+        
+            $location = $path;
 
             if (is_dir($location)) 
             { 

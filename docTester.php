@@ -1,13 +1,15 @@
 <?php
 
+use DatabaseConnection\Connection;
 use DataHandler\Recordset;
 use User\Authentication;
 use Helper\Session;
 use System\FileSystem;
 
 		require_once "autoloader.php";
-		new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
-		new DatabaseConnection\Connection("master", "sql3.xel.nl", "vh86810-1", "#SaNdYmOvEs5000GezelLiG", "vh86810-1db1");
+		 new DatabaseConnection\Connection("local", "localhost", "root", "", "testdb");
+		 $conn = DatabaseConnection\Connection::setConnection();
+		
 		$i = 0;
 	$t = new FileSystem();
 	FileSystem::setAppRoot();
@@ -32,7 +34,7 @@ use System\FileSystem;
 <body>
  <a href="test.php">test</a>
 	<form method="POST" enctype="multipart/form-data">
-		<!-- <input type="text" name="b" id="asd"/> -->
+		<input type="text" name="b" id="asd"/>
 		<input type="file" name="c" id="test" multiple/>
 		<!-- <input type="text" name="token" value= -->
 		<button name="submit" type="submit">submit</button>
