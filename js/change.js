@@ -1,34 +1,38 @@
 "use strict";
 
-function getfilelist(serverCaller, cont, root) {
+function getDirectoryList(serverCaller, cont, root, functionRelease = false) {
  
     /* send an ajax request */
     $.post(serverCaller, { dir: root }, function(data) {
         console.log(data);
             $(cont).append(data); /* append the data to the div */
-            if( 'Sample' == root ) /* check for the first run */
+            if(!functionRelease) /* check for the first run */
                 $(cont).find('UL:hidden').show();
             else /* subsequent calls will slide the list with animation */
                 $(cont).find('UL:hidden').slideDown({ duration: 500, easing: null }); 
     });
+
+    if (!functionRelease) {
+        getDirectoryContents(serverCaller, cont);
+    }
 }
 
-function test() {
-    $('#tester').on('click', 'LI A', function () { /* monitor the click event on links */
+function getDirectoryContents(serverCaller, cont) {
+    $(cont).on(`click`, `li a`, function () { /* monitor the click event on links */
+
         var entry = $(this).parent(); /* get the parent element of the link */
-        console.log(entry);
-        if (entry.hasClass('folder')) { /* check if it has folder as class name */
-            if (entry.hasClass('collapsed')) { /* check if it is collapsed */
-                entry.find('UL').remove(); /* if there is any UL remove it */
-                getfilelist("classes/System/TreeView.php", entry, $(this).attr('rel')); /* initiate Ajax request */
-                entry.removeClass('collapsed').addClass('expanded'); /* mark it as expanded */
-            }
-            else { /* if it is expanded already */
-                entry.find('UL').slideUp({ duration: 500, easing: null }); /* collapse it */
-                entry.removeClass('expanded').addClass('collapsed'); /* mark it as collapsed */
+
+        if (entry.hasClass(`folder`)) { /* check if it has folder as class name */
+            if (entry.hasClass(`collapsed`)) { /* check if it is collapsed */
+                entry.find(`UL`).remove(); /* if there is any UL remove it */
+                getDirectoryList(serverCaller, entry, $(this).attr(`rel`), true); /* initiate Ajax request */
+                entry.removeClass(`collapsed`).addClass(`expanded`); /* mark it as expanded */
+            } else { /* if it is expanded already */
+                entry.find(`UL`).slideUp({ duration: 500, easing: null }); /* collapse it */
+                entry.removeClass(`expanded`).addClass(`collapsed`); /* mark it as collapsed */
             }
         } else { /* clicked on file */
-            $('#selected_file').text("File:  " + $(this).attr('rel'));
+            $(`#selected_file`).text(`File:  ${$(this).attr("rel")}`);
         }
         return false;
     });

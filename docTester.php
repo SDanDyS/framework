@@ -52,8 +52,7 @@ use System\FileSystem;
 	</form>
 		<div id="tester" style="height: 500px;"></div>
 	<script>
-		getfilelist("classes/System/TreeView.php", "#tester", "C:/xampp/htdocs/framework/classes");
-		test();
+		getDirectoryList("classes/System/TreeView.php", "#tester", "C:/xampp/htdocs/framework/classes");
 	</script>
 </body>
 </html>
