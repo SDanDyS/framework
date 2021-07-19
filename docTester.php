@@ -40,7 +40,10 @@ use System\FileSystem;
 
 <!-- Latest compiled JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-	<script src="js/change.js"></script>
+
+<script src="https://kit.fontawesome.com/3cad08ea6d.js" crossorigin="anonymous"></script>
+
+<script src="js/change.js"></script>
 </head>
 <body>
  <a href="test.php">test</a>

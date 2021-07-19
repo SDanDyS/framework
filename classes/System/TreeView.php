@@ -3,8 +3,14 @@ namespace System;
 class Treeview 
 {
  
-    private $files = [];
-    private $folder;
+    private array $files = [];
+    private string $folder;
+
+    private string $directoryStyling;
+    private string $fileStyling;
+
+    private static string $staticDirectoryStyling;
+    private static string $staticFileStyling;
      
    public function __construct($path) 
    {
@@ -33,7 +39,7 @@ class Treeview
         }
    }
  
-   public function createTree() 
+   public function createTree() : string
    {
              
         if (count($this->files) > 2) 
@@ -41,32 +47,91 @@ class Treeview
             /* First 2 entries are . and ..  -skip them */
             natcasesort($this->files);
 
-            $list = '<ul class="filetree" style="display: none;">';
-           
+            $directoryStyling = $this->getDirectoryFontAwesome();
+
+            $fileStyling = $this->getFileFontAwesome();
+
+            $list = "<ul class='filetree' style='display: none;'>";
+
             // Group folders first
             foreach ($this->files as $file) 
             {
                 if (file_exists($this->folder.$file) && $file != '.' && $file != '..' && is_dir($this->folder.$file)) 
                 {
-                    $list .= '<li class="folder collapsed"><a href="#" rel="' . htmlentities($this->folder.$file) . '/">' . htmlentities($file) . '</a></li>';
+                    $list .= "<li class='folder collapsed'><span class='{$directoryStyling}'></span><a href='#' rel='".htmlentities($this->folder.$file)."'>" . htmlentities($file) . "</a></li>";
                 }
             }
+
             // Group all files
             foreach ($this->files as $file) 
             {
                 if (file_exists($this->folder.$file) && $file != '.' && $file != '..' && !is_dir($this->folder.$file)) 
                 {
-                    $ext = preg_replace('/^.*\./', '', $file);
-                    $list .= '<li class="file ext_' . $ext . '"><a href="#" rel="' . htmlentities($this->folder.$file) . '">' . htmlentities($file) . '</a></li>';
+                    $ext = preg_replace("/^.*\./", "", $file);
+                    $list .= "<li class='file ext_'{$ext}'><span class='{$fileStyling}'></span><a href='#' rel='".htmlentities($this->folder.$file)."'>" . htmlentities($file) . "</a></li>";
                 }
             }
-            $list .= '</ul>'; 
+            $list .= "</ul>";
             return $list;
         }
+   }
+
+   public function setDirectoryFontAwesome(string $styling, bool $isStatic = false) : void
+   {
+       if (!$isStatic)
+       {
+           $this->directoryStyling = $styling;
+       } else
+       {
+           self::$staticDirectoryStyling = $styling;
+       }
+   }
+
+   public function getDirectoryFontAwesome()
+   {
+        if (!empty($this->directoryStyling))
+        {
+            $directoryStyling = $this->directoryStyling;
+        } else if (!empty(self::$staticDirectoryStyling))
+        {
+            $directoryStyling = self::$staticDirectoryStyling;
+        } else
+        {
+            $directoryStyling = "";
+        }
+
+        return $directoryStyling;
+   }
+
+   public function setFileFontAwesome(string $styling, bool $isStatic = false) : void
+   {
+       if (!$isStatic)
+       {
+           $this->fileStyling = $styling;
+       } else
+       {
+           self::$staticFileStyling = $styling;
+       }
+   }
+
+   public function getFileFontAwesome() : string
+   {
+        if (!empty($this->fileStyling))
+        {
+            $fileStyling = $this->fileStyling;
+        } else if (!empty(self::$staticFileStyling))
+        {
+            $fileStyling = self::$staticFileStyling;
+        } else
+        {
+            $fileStyling = "";
+        }
+
+        return $fileStyling;
    }
 }
 
 $tt = new Treeview($_POST['dir']);
-//  exit($path);
+$tt->setDirectoryFontAwesome("fas fa-folder");
 echo $tt->createTree();
 ?>
