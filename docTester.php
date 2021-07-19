@@ -29,7 +29,18 @@ use System\FileSystem;
 <html>
 <head>
 	<title>test</title>
-	<script src="js/ImageCreator.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Popper JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script src="js/change.js"></script>
 </head>
 <body>
  <a href="test.php">test</a>
@@ -39,15 +50,10 @@ use System\FileSystem;
 		<!-- <input type="text" name="token" value= -->
 		<button name="submit" type="submit">submit</button>
 	</form>
-	<img id="yes" src=""/>
-	<div id="idorname"></div>
+		<div id="tester" style="height: 500px;"></div>
 	<script>
-		let test = new ImageCreator({
-			realInput: "c",
-			appendToElement: "idorname"
-		});
-		test.allowedExtension = ["jpg", "jpeg", "gif"];
-		console.log(test.allowedExtension);
+		getfilelist("classes/System/TreeView.php", "#tester", "C:/xampp/htdocs/framework/classes");
+		test();
 	</script>
 </body>
 </html>

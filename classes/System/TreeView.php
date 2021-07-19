@@ -9,13 +9,16 @@ class Treeview
    public function __construct($path) 
    {
          
+        //file name or directory exists
         if(file_exists($path)) 
         {
-            if($path[strlen( $path) - 1] ==  '/' )
+            //substract one, because array is 0 based indexed
+            if($path[strlen($path) - 1] ==  '/' )
             {
                 $this->folder = $path;
             } else
             {
+                //does not have directory seperator, add directory seperator
                 $this->folder = $path . '/';
             }
              
@@ -51,10 +54,10 @@ class Treeview
             // Group all files
             foreach ($this->files as $file) 
             {
-                if (file_exists($this->folder.$file) && $file != '.' && $file != '..' && !is_dir($this->folder . $file)) 
+                if (file_exists($this->folder.$file) && $file != '.' && $file != '..' && !is_dir($this->folder.$file)) 
                 {
                     $ext = preg_replace('/^.*\./', '', $file);
-                    $list .= '<li class="file ext_' . $ext . '"><a href="#" rel="' . htmlentities($this->folder . $file) . '">' . htmlentities($file) . '</a></li>';
+                    $list .= '<li class="file ext_' . $ext . '"><a href="#" rel="' . htmlentities($this->folder.$file) . '">' . htmlentities($file) . '</a></li>';
                 }
             }
             $list .= '</ul>'; 
@@ -62,4 +65,8 @@ class Treeview
         }
    }
 }
+
+$tt = new Treeview($_POST['dir']);
+//  exit($path);
+echo $tt->createTree();
 ?>
