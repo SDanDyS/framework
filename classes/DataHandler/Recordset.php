@@ -59,9 +59,10 @@
 		*/
 		private $table;
 
-		public function __construct($table, $scriptError = "JSON")
+		public function __construct($table, $requiredConn = "mysqli", $scriptError = "JSON")
 		{
-			$this->conn = Connection::setConnection();
+			$availableConnection = Connection::setConnection();
+			$this->conn = $availableConnection[$requiredConn];
 
 			$this->scriptError = $scriptError;
 
