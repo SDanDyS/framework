@@ -17,10 +17,28 @@ use System\FileSystem;
 	$t->setUploadsDirectory("uploads");
 	Session::start();
 	
+	$obj = new Recordset("test");
+	$obj->setImageObject($t);
+
+	if (isset($_GET["id"]))
+	{
+		$obj->prepare("SELECT * FROM `test` WHERE id = ?", $_GET["id"]);
+		var_dump($obj->getRow());
+		exit();
+	}
 	if (isset($_POST["submit"]))
 	{
-		$obj = new Recordset("test");
-		$obj->setImageObject($t);
+
+		//WOULD YOU LIKE TO CHANGE THE POST OR GET VALUE?
+		//UNCOMMENT FOLLOWING LINE:::
+		//true parameter will suppress the POST or GET from overwriting
+		//$obj->setField("a", "matijn", true);
+
+		//WOULD YOU LIKE TO ADD A VALUE TO A DATABASE COLUMN WHICH ISN'T NAMED THE SAME IN YOUR FORM? NO PROBLEM.
+		// UNCOMMENT FOLLOWING LINE :::
+		//$obj->setField("YOUR COLUMN NAME", "THE VALUE YOU WOULD LIKE TO INSERT");
+
+		//save the data
 		$obj->save();
 		exit();
 	}
