@@ -49,7 +49,7 @@ use System\FileSystem;
  <a href="test.php">test</a>
 	<form method="POST" enctype="multipart/form-data">
 		<input type="text" name="b" id="asd"/>
-		<input type="file" name="c" id="test" multiple/>
+		<input type="file" name="c" id="test"/>
 		<!-- <input type="text" name="token" value= -->
 		<button name="submit" type="submit">submit</button>
 	</form>
