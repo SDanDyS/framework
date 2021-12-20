@@ -115,7 +115,7 @@ class FileSystem
 			return self::$ROOT["DOC_ROOT"].$path;
         }
 
-        public static function writeFile(string $path, mixed $msg = "", bool $overwrite = false) : void
+        public static function writeFile(string $path, mixed $msg = NULL, bool $overwrite = false) : void
         {
             //order deny,allow
             //deny from all
@@ -131,6 +131,10 @@ class FileSystem
                 </FilesMatch>
             */
 
+            if (is_null($msg))
+            {
+                $msg = "";
+            }
             switch($overwrite)
             {
                 case true:

@@ -54,8 +54,8 @@ use System\FileSystem;
 		<button name="submit" type="submit">submit</button>
 	</form>
 		<div id="tester" style="height: 500px;"></div>
-	<script>
+	<!-- <script>
 		getDirectoryList("classes/System/TreeView.php", "#tester", "C:/xampp/htdocs/framework/classes");
-	</script>
+	</script> -->
 </body>
 </html>

@@ -13,7 +13,7 @@ class Session
         return $_SESSION[$key];
     }
 
-    public static function unset(string|null $key = null)
+    public static function unset(string $key = null)
     {
         if (is_null($key))
         {
