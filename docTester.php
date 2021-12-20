@@ -30,8 +30,7 @@ use System\FileSystem;
 	{
 
 		//WOULD YOU LIKE TO CHANGE THE POST OR GET VALUE?
-		//UNCOMMENT FOLLOWING LINE:::
-		//true parameter will suppress the POST or GET from overwriting
+		//UNCOMMENT FOLLOWING LINE::: => //true parameter will suppress the POST or GET from overwriting
 		//$obj->setField("a", "matijn", true);
 
 		//WOULD YOU LIKE TO ADD A VALUE TO A DATABASE COLUMN WHICH ISN'T NAMED THE SAME IN YOUR FORM? NO PROBLEM.
