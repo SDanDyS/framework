@@ -323,3 +323,38 @@ if (typeof escapeHtmlEntities == 'undefined') {
         8364: 'euro'
     };
 }
+
+function calculate_percentage(amount, percentage) {
+
+    // IN CASE PERCENTAGE SIGN HAS BEEN PASSED ALONG, STRIP IT
+    let splitter = percentage.split("%");
+    let purePercentage = splitter[0];
+
+    let onePercent = amount / purePercentage;
+
+    let valueOfPercentage = onePercent * purePercentage;
+
+    return valueOfPercentage;
+}
+
+/*
+* Gets query parameter from URL based on name
+* @param {string} name of query parameter
+* @returns {string} value of query parameter
+*/
+function getParameterByName(name) {
+  const url = window.location.href;
+  name = name.replace(/[\[\]]/g, `\\$&`);
+  const regex = new RegExp(`[?&]` + name + `(=([^&#]*)|&|#|$)`),
+	  results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return ``;
+  return decodeURIComponent(results[2].replace(/\+/g, ` `));
+}
+
+function in_array(needle, haystack) {
+    for(var i in haystack) {
+        if(haystack[i] == needle) return true;
+    }
+    return false;
+}
